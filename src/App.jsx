@@ -4,17 +4,19 @@ import React from "react";
 import Header from "./layout/Header";
 import Footer from "./layout/Footer";
 import PageContent from "./layout/PageContent";
-import HomePage from "./pages/HomePage";
+import HomePage from "./Pages/HomePage";
+
 
 function App() {
   return (
-    <Router> {/* Router ile sar */}
-      <PageContent>
-        <Header />
-        <HomePage />
-        <Footer />
-      </PageContent>
-    </Router>
+    <Router> 
+    <PageContent>
+    <Header />
+    <HomePage />
+    <Footer />
+    </PageContent>
+    </Router> 
+    
   );
 }
 
