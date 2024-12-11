@@ -3,19 +3,14 @@ import React from "react";
 
 const Header = () => {
   return (
-
-    <header className="flex flex-col items-center justify-between px-4 py-2 bg-white border-b md:flex-row">
-      {/* Logo Bölümü */}
+    <header className="relative flex flex-col items-center justify-between px-4 py-2 bg-white border-b md:flex-row md:items-center">
+     
       <div className="text-lg font-bold text-left w-full md:w-auto">
         <span className="text-left block md:inline">Bandage</span>
       </div>
-      <div className="bg-red-500 text-white p-6">
-      Eğer bu kırmızı arka planda görünüyorsa, Tailwind çalışıyor demektir.
-    </div>
-      
 
-      {/* Menü Linkleri */}
-      <nav className="flex flex-col items-center mt-4 space-y-2 text-[#737373] md:space-x-6 md:space-y-0 md:mt-0 md:flex-row">
+      
+      <nav className="flex flex-col items-center mt-4 space-y-2 text-[#737373] md:space-x-6 md:space-y-0 md:mt-0 md:flex-row md:justify-center md:w-full">
         <a href="#" className="text-sm hover:underline">
           Home
         </a>
@@ -30,8 +25,8 @@ const Header = () => {
         </a>
       </nav>
 
-      {/* Sağdaki İkonlar */}
-      <div className="flex items-center justify-end w-full space-x-4 md:w-auto">
+      
+      <div className="absolute top-0 right-0 mt-4 mr-4 flex space-x-4">
         <button className="p-2 rounded-full hover:bg-gray-100">
           <Search size={20} />
         </button>
