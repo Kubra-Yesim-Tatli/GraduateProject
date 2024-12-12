@@ -19,9 +19,13 @@ const Header = () => {
       </nav>
 
       <div className="flex items-center justify-end w-full space-x-4 md:w-auto">
-        <Link to="/signup" className="text-blue-600 font-medium hover:underline">
-          Login / Register
-        </Link>
+      <Link to="/login" className="text-blue-600 font-medium hover:underline">
+  Login
+</Link>
+<Link to="/signup" className="text-blue-600 font-medium hover:underline">
+  Register
+</Link>
+
         <button className="p-2 rounded-full hover:bg-gray-100">
           <Search size={20} />
         </button>
