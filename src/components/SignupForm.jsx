@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
-import { useHistory } from "react-router-dom"; // Use useHistory for version 5.3.4
+import { useHistory } from "react-router-dom";
 
 const SignupForm = () => {
   const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState("customer");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const history = useHistory(); // Replace navigate with history for v5
+  const history = useHistory(); // Replace useNavigate with useHistory
   const {
     register,
     handleSubmit,
@@ -35,28 +35,38 @@ const SignupForm = () => {
 
   const onSubmit = (data) => {
     setIsSubmitting(true);
-    // Format data
-    const postData = {
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      role_id: data.role_id,
-      ...(data.role_id === "store" && {
+    // Format data based on role
+    let postData;
+    if (data.role_id === "store") {
+      postData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role_id: data.role_id,
         store: {
           name: data.store_name,
           phone: data.store_phone,
           tax_no: data.store_tax_no,
           bank_account: data.store_bank_account,
         },
-      }),
-    };
+      };
+    } else {
+      postData = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role_id: data.role_id,
+      };
+    }
+
     api
       .post("/signup", postData)
       .then(() => {
         alert("You need to click the link in the email to activate your account!");
-        history.goBack(); // Navigate to the previous page
+        history.goBack(); // Navigate back to the previous page in v5
       })
       .catch((error) => {
+        console.error("Signup error:", error);
         alert("Signup failed: " + (error.response?.data?.message || "Unknown error"));
       })
       .finally(() => {
@@ -126,16 +136,17 @@ const SignupForm = () => {
       <div>
         <label className="block text-sm font-medium mb-2">Role</label>
         <select
-          {...register("role_id")}
+          {...register("role_id", { required: true })}
           className="border px-3 py-2 w-full"
           onChange={(e) => setSelectedRole(e.target.value)}
         >
           {roles.map((role) => (
-            <option key={role.id} value={role.id}>
+            <option key={role.id} value={role.code}>
               {role.name}
             </option>
           ))}
         </select>
+        {errors.role_id && <span className="text-red-500">Role is required.</span>}
       </div>
       {/* Store Fields */}
       {selectedRole === "store" && (
@@ -143,39 +154,51 @@ const SignupForm = () => {
           <div>
             <label className="block text-sm font-medium mb-2">Store Name</label>
             <input
-              {...register("store_name", { required: true, minLength: 3 })}
+              {...register("store_name", { required: selectedRole === "store", minLength: 3 })}
               className="border px-3 py-2 w-full"
             />
+            {errors.store_name && (
+              <span className="text-red-500">Store name must be at least 3 characters long.</span>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Phone</label>
             <input
               {...register("store_phone", {
-                required: true,
+                required: selectedRole === "store",
                 pattern: /^(05)([0-9]{9})$/,
               })}
               className="border px-3 py-2 w-full"
             />
+            {errors.store_phone && (
+              <span className="text-red-500">Enter a valid Türkiye phone number (e.g., 05XXXXXXXXX).</span>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Tax ID</label>
             <input
               {...register("store_tax_no", {
-                required: true,
+                required: selectedRole === "store",
                 pattern: /^T\d{4}V\d{6}$/,
               })}
               className="border px-3 py-2 w-full"
             />
+            {errors.store_tax_no && (
+              <span className="text-red-500">Tax ID must follow the pattern "TXXXXVXXXXXX".</span>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Bank Account (IBAN)</label>
             <input
               {...register("store_bank_account", {
-                required: true,
+                required: selectedRole === "store",
                 pattern: /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/,
               })}
               className="border px-3 py-2 w-full"
             />
+            {errors.store_bank_account && (
+              <span className="text-red-500">Enter a valid IBAN address (e.g., TRXX...).</span>
+            )}
           </div>
         </>
       )}
