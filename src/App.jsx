@@ -3,7 +3,7 @@ import React from "react";
 import Header from "./layout/Header";
 import Footer from "./layout/Footer";
 import PageContent from "./layout/PageContent";
-import HomePage from "./Pages/HomePage";
+import HomePage from "./pages/HomePage";
 
 
 import SignupForm from "./components/SignupForm";

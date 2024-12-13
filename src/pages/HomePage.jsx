@@ -9,6 +9,7 @@ const HomePage = () => {
       <Slider />
       <EditorsPickSection />
       <ProductCard/>
+      
     </div>
   );
 };
