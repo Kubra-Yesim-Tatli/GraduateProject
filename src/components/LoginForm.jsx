@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify"; // ToastContainer'ı da dahil ediyoruz
+import axios from "axios"; // axios'u dahil ediyoruz
 
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../layout/UserContext";
 
 const LoginForm = ({ history, location }) => {
-  const { login } = useContext(UserContext); 
+  const { login } = useContext(UserContext);
   const {
     register,
     handleSubmit,
@@ -15,30 +16,35 @@ const LoginForm = ({ history, location }) => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await fetch("/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      // axios ile POST isteği gönderiyoruz
+      const response = await axios.post(
+        "https://workintech-fe-ecommerce.onrender.com/login",
+        {
           email: data.email,
           password: data.password,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        
-        login(result.user); 
-        if (data.rememberMe) {
-          localStorage.setItem("authToken", result.token); 
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-        toast.success("Login successful!"); 
+      );
 
-        
+      const result = response.data;
+
+      if (response.status === 200) {
+        // Giriş başarılıysa
+        login(result.user);
+        if (data.rememberMe) {
+          localStorage.setItem("authToken", result.token);
+        }
+        toast.success("Login successful!");
+
+        // Önceki sayfa varsa oraya, yoksa ana sayfaya yönlendir
         const redirectTo = location.state?.from || "/";
         history.push(redirectTo);
       } else {
-        toast.error(result.message || "Login failed"); 
+        toast.error(result.message || "Login failed");
       }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
@@ -49,7 +55,7 @@ const LoginForm = ({ history, location }) => {
     <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
-       
+        {/* Email Field */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="email">
             Email
@@ -67,7 +73,7 @@ const LoginForm = ({ history, location }) => {
           )}
         </div>
 
-        
+        {/* Password Field */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="password">
             Password
@@ -87,7 +93,7 @@ const LoginForm = ({ history, location }) => {
           )}
         </div>
 
-        
+        {/* Remember Me */}
         <div className="mb-4 flex items-center">
           <input
             type="checkbox"
@@ -100,7 +106,7 @@ const LoginForm = ({ history, location }) => {
           </label>
         </div>
 
-       
+        {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
@@ -108,6 +114,9 @@ const LoginForm = ({ history, location }) => {
           Login
         </button>
       </form>
+
+      {/* ToastContainer'ı ekliyoruz */}
+      <ToastContainer />
     </div>
   );
 };
