@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState } from "react";
 
 export const UserContext = createContext();
 
@@ -6,12 +6,12 @@ const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = (userData) => {
-    setUser(userData);
+    setUser(userData); // Kullanıcı bilgilerini kaydet
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('authToken'); // Token silme
+    setUser(null); // Kullanıcı bilgilerini sıfırla
+    localStorage.removeItem("authToken"); // Token'i kaldır
   };
 
   return (
@@ -22,3 +22,4 @@ const UserProvider = ({ children }) => {
 };
 
 export default UserProvider;
+
