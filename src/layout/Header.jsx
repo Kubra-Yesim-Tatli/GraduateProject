@@ -1,12 +1,12 @@
 import { AlignJustify, Search, ShoppingCart, User } from "lucide-react";
-import React, { useContext } from "react";
-import { Link } from "react-router-dom"; 
-
+import React, { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import Gravatar from "react-gravatar";
 import { UserContext } from "./UserContext";
 
 const Header = () => {
   const { user, logout } = useContext(UserContext); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="flex flex-col items-center justify-between px-4 py-2 bg-white border-b md:flex-row">
@@ -52,9 +52,25 @@ const Header = () => {
         <button className="p-2 rounded-full hover:bg-gray-100">
           <ShoppingCart size={20} />
         </button>
-        <button className="p-2 rounded-full hover:bg-gray-100">
+        
+        {/* Hamburger Menu */}
+        <button
+          className="p-2 rounded-full hover:bg-gray-100 md:hidden"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
           <AlignJustify size={20} />
         </button>
+
+        {isMenuOpen && (
+          <div className="absolute top-16 right-4 bg-white shadow-lg p-4 rounded-md md:hidden">
+            <Link to="/" className="block text-sm py-2">Home</Link>
+            <Link to="/shop" className="block text-sm py-2">Shop</Link>
+            <Link to="/about" className="block text-sm py-2">About</Link>
+            <Link to="/blog" className="block text-sm py-2">Blog</Link>
+            <Link to="/contact" className="block text-sm py-2">Contact</Link>
+            <Link to="/pages" className="block text-sm py-2">Pages</Link>
+          </div>
+        )}
       </div>
     </header>
   );

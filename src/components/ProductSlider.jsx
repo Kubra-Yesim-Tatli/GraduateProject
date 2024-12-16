@@ -12,7 +12,7 @@ const ProductSlider = () => {
       style={{ backgroundColor: "#23856D" }}
     >
       <div className="w-full max-w-sm relative">
-        
+        {/* Swiper Slider */}
         <Swiper
           modules={[Navigation]}
           spaceBetween={50}
