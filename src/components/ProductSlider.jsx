@@ -12,7 +12,7 @@ const ProductSlider = () => {
       style={{ backgroundColor: "#23856D" }}
     >
       <div className="w-full max-w-sm relative">
-        {/* Swiper Slider */}
+        
         <Swiper
           modules={[Navigation]}
           spaceBetween={50}
@@ -22,7 +22,7 @@ const ProductSlider = () => {
             prevEl: ".swiper-button-prev",
           }}
         >
-          {/* Slide 1 */}
+          
           <SwiperSlide>
             <div className="flex flex-col items-center text-center text-white">
               <p className="text-sm mb-2">SUMMER 2020</p>
@@ -43,7 +43,7 @@ const ProductSlider = () => {
           </SwiperSlide>
         </Swiper>
 
-        {/* Swiper Okları */}
+       
         <div className="swiper-button-prev absolute left-4 top-1/2 transform -translate-y-1/2 text-white cursor-pointer z-10">
           <ChevronLeft size={32} />
         </div>

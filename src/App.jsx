@@ -16,9 +16,9 @@ function App() {
     <Router>
       <PageContent>
         <Header />
-        <Switch> {/* Switch ile sadece bir route'un render edilmesini sağlıyoruz */}
-          <Route exact path="/" component={HomePage} /> {/* HomePage için bir route */}
-          <Route path="/signup" component={SignupForm} /> {/* /signup için SignUpPage route'u */}
+        <Switch> 
+          <Route exact path="/" component={HomePage} /> 
+          <Route path="/signup" component={SignupForm} /> 
           <Route path="/login" component={LoginForm} />
         </Switch>
         <Footer />

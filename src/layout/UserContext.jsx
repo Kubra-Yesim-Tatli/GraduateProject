@@ -6,12 +6,12 @@ const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = (userData) => {
-    setUser(userData); // Kullanıcı bilgilerini kaydet
+    setUser(userData); 
   };
 
   const logout = () => {
-    setUser(null); // Kullanıcı bilgilerini sıfırla
-    localStorage.removeItem("authToken"); // Token'i kaldır
+    setUser(null); 
+    localStorage.removeItem("authToken"); 
   };
 
   return (

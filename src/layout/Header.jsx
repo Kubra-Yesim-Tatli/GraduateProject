@@ -1,12 +1,12 @@
 import { AlignJustify, Search, ShoppingCart, User } from "lucide-react";
 import React, { useContext } from "react";
-import { Link } from "react-router-dom"; // Link importu
+import { Link } from "react-router-dom"; 
 
 import Gravatar from "react-gravatar";
 import { UserContext } from "./UserContext";
 
 const Header = () => {
-  const { user, logout } = useContext(UserContext); // Kullanıcı bilgilerini ve logout fonksiyonunu alıyoruz
+  const { user, logout } = useContext(UserContext); 
 
   return (
     <header className="flex flex-col items-center justify-between px-4 py-2 bg-white border-b md:flex-row">
