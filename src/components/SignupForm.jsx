@@ -1,41 +1,26 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchRolesIfNeeded } from "../Redux/Action/clientThunk";
 import { useHistory } from "react-router-dom";
+import axios from "axios";
 
 const SignupForm = () => {
-  const [roles, setRoles] = useState([]);
-  const [selectedRole, setSelectedRole] = useState("customer");
+  const dispatch = useDispatch();
+  const history = useHistory();
+  
+  // Redux state'ten roles verisini alıyoruz
+  const roles = useSelector((state) => state.client.roles);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const history = useHistory(); // Replace useNavigate with useHistory
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const password = watch("password");
 
-  // Axios instance
-  const api = axios.create({
-    baseURL: "https://workintech-fe-ecommerce.onrender.com",
-  });
-
-  // Fetch roles
   useEffect(() => {
-    api
-      .get("/roles")
-      .then((response) => {
-        setRoles(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching roles:", error);
-      });
-  }, []);
+    dispatch(fetchRolesIfNeeded()); // Roles verisini alıyoruz
+  }, [dispatch]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setIsSubmitting(true);
-    // Format data based on role
     let postData;
     if (data.role_id === "store") {
       postData = {
@@ -59,20 +44,26 @@ const SignupForm = () => {
       };
     }
 
-    api
-      .post("/signup", postData)
-      .then(() => {
-        alert("You need to click the link in the email to activate your account!");
-        history.goBack(); // Navigate back to the previous page in v5
-      })
-      .catch((error) => {
-        console.error("Signup error:", error);
-        alert("Signup failed: " + (error.response?.data?.message || "Unknown error"));
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+    try {
+      await axios.post("https://workintech-fe-ecommerce.onrender.com/signup", postData);
+      alert("You need to click the link in the email to activate your account!");
+      history.goBack();
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("Signup failed: " + (error.response?.data?.message || "Unknown error"));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Loading veya hata durumlarını kontrol ediyoruz
+  if (roles === undefined) {
+    return <div>Loading roles...</div>;
+  }
+
+  if (roles === null) {
+    return <div>Error loading roles.</div>;
+  }
 
   return (
     <form
@@ -138,23 +129,26 @@ const SignupForm = () => {
         <select
           {...register("role_id", { required: true })}
           className="border px-3 py-2 w-full"
-          onChange={(e) => setSelectedRole(e.target.value)}
         >
-          {roles.map((role) => (
-            <option key={role.id} value={role.code}>
-              {role.name}
-            </option>
-          ))}
+          {Array.isArray(roles) && roles.length > 0 ? (
+            roles.map((role) => (
+              <option key={role.id} value={role.code}>
+                {role.name}
+              </option>
+            ))
+          ) : (
+            <option disabled>No roles available</option>
+          )}
         </select>
         {errors.role_id && <span className="text-red-500">Role is required.</span>}
       </div>
       {/* Store Fields */}
-      {selectedRole === "store" && (
+      {watch("role_id") === "store" && (
         <>
           <div>
             <label className="block text-sm font-medium mb-2">Store Name</label>
             <input
-              {...register("store_name", { required: selectedRole === "store", minLength: 3 })}
+              {...register("store_name", { required: true, minLength: 3 })}
               className="border px-3 py-2 w-full"
             />
             {errors.store_name && (
@@ -165,7 +159,7 @@ const SignupForm = () => {
             <label className="block text-sm font-medium mb-2">Phone</label>
             <input
               {...register("store_phone", {
-                required: selectedRole === "store",
+                required: true,
                 pattern: /^(05)([0-9]{9})$/,
               })}
               className="border px-3 py-2 w-full"
@@ -178,7 +172,7 @@ const SignupForm = () => {
             <label className="block text-sm font-medium mb-2">Tax ID</label>
             <input
               {...register("store_tax_no", {
-                required: selectedRole === "store",
+                required: true,
                 pattern: /^T\d{4}V\d{6}$/,
               })}
               className="border px-3 py-2 w-full"
@@ -191,7 +185,7 @@ const SignupForm = () => {
             <label className="block text-sm font-medium mb-2">Bank Account (IBAN)</label>
             <input
               {...register("store_bank_account", {
-                required: selectedRole === "store",
+                required: true,
                 pattern: /^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/,
               })}
               className="border px-3 py-2 w-full"

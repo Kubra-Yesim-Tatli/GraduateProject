@@ -1,13 +1,13 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
-import { toast, ToastContainer } from "react-toastify"; 
-import axios from "axios"; 
-
+import { toast, ToastContainer } from "react-toastify";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setUser } from "../Redux/action/clientActions"; // Action'ı import et
 import "react-toastify/dist/ReactToastify.css";
-import { UserContext } from "../layout/UserContext";
 
 const LoginForm = ({ history, location }) => {
-  const { login } = useContext(UserContext);
+  const dispatch = useDispatch(); // Redux Dispatch
   const {
     register,
     handleSubmit,
@@ -16,7 +16,6 @@ const LoginForm = ({ history, location }) => {
 
   const onSubmit = async (data) => {
     try {
-      
       const response = await axios.post(
         "https://workintech-fe-ecommerce.onrender.com/login",
         {
@@ -24,23 +23,20 @@ const LoginForm = ({ history, location }) => {
           password: data.password,
         },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       const result = response.data;
 
       if (response.status === 200) {
-        
-        login(result.user);
+        dispatch(setUser(result.user)); // Redux store'a kullanıcıyı ekle
+        toast.success("Login successful!");
+
         if (data.rememberMe) {
           localStorage.setItem("authToken", result.token);
         }
-        toast.success("Login successful!");
 
-        
         const redirectTo = location.state?.from || "/";
         history.push(redirectTo);
       } else {
@@ -55,7 +51,7 @@ const LoginForm = ({ history, location }) => {
     <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
-        
+        {/* Email */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="email">
             Email
@@ -72,8 +68,7 @@ const LoginForm = ({ history, location }) => {
             <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
           )}
         </div>
-
-        
+        {/* Password */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="password">
             Password
@@ -87,13 +82,10 @@ const LoginForm = ({ history, location }) => {
             } rounded`}
           />
           {errors.password && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.password.message}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
           )}
         </div>
-
-        
+        {/* Remember Me */}
         <div className="mb-4 flex items-center">
           <input
             type="checkbox"
@@ -105,8 +97,7 @@ const LoginForm = ({ history, location }) => {
             Remember Me
           </label>
         </div>
-
-        
+        {/* Submit */}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
@@ -114,8 +105,6 @@ const LoginForm = ({ history, location }) => {
           Login
         </button>
       </form>
-
-      
       <ToastContainer />
     </div>
   );
