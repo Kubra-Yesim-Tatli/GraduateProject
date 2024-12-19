@@ -1,0 +1,45 @@
+/* Custom dots style */
+.custom-dots {
+  position: absolute;
+  bottom: 1rem;
+  display: flex !important;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  gap: 0.5rem;
+}
+
+.custom-dots li {
+  margin: 0;
+}
+
+.custom-dots li button {
+  padding: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: rgb(209 213 219);
+  transition: all 0.2s;
+}
+
+.custom-dots li.slick-active button {
+  background-color: rgb(59 130 246);
+  transform: scale(1.25);
+}
+
+/* Hide default slick arrows */
+.slick-prev:before,
+.slick-next:before {
+  display: none;
+}
+
+/* Smooth slide transition */
+.slick-slide {
+  transition: opacity 0.5s ease;
+}
+
+.slick-slide:not(.slick-active) {
+  opacity: 0.5;
+}
