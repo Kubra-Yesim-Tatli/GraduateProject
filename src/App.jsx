@@ -11,17 +11,18 @@ import ShopPage from "./pages/ShopPage";
 import UserProvider from "./layout/UserContext";
 import store from "./Redux/store";
 import ProductDetail from './pages/ProductDetail';
+import CategoryPage from './pages/CategoryPage';
 
-// Koşullu Header ve Footer için bir Wrapper oluşturuyoruz
 const Layout = ({ children }) => {
   const location = useLocation();
-  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
-      {isAuthPage ? null : <Header />}
-      {children}
-      {isAuthPage ? null : <Footer />}
+      <Header />
+      <main className="flex-grow">
+        {children}
+      </main>
+      <Footer />
     </div>
   );
 };
@@ -36,7 +37,9 @@ function App() {
               <Route exact path="/" component={HomePage} />
               <Route path="/signup" component={SignupForm} />
               <Route path="/login" component={LoginForm} />
-              <Route path="/shop" component={ShopPage} />
+              <Route exact path="/shop" component={ShopPage} />
+              <Route path="/categories" component={CategoryPage} />
+              <Route path="/shop/:gender/:category" component={ShopPage} />
               <Route path="/product/:id" component={ProductDetail} />
             </Switch>
           </Layout>
