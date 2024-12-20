@@ -3,6 +3,7 @@ import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import Gravatar from "react-gravatar";
 import { UserContext } from "./UserContext";
+import CategoryDropdown from "../components/CategoryDropdown";
 
 const Header = () => {
   const { user, logout } = useContext(UserContext); 
@@ -17,6 +18,7 @@ const Header = () => {
       <nav className="flex flex-col items-center mt-4 space-y-2 text-[#737373] md:space-x-6 md:space-y-0 md:mt-0 md:flex-row">
         <Link to="/" className="text-sm hover:underline">Home</Link>
         <Link to="/shop" className="text-sm hover:underline">Shop</Link>
+        <CategoryDropdown />
         <Link to="/about" className="text-sm hover:underline">About</Link>
         <Link to="/blog" className="text-sm hover:underline">Blog</Link>
         <Link to="/contact" className="text-sm hover:underline">Contact</Link>

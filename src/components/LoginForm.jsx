@@ -48,7 +48,7 @@ const LoginForm = ({ history, location }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
+    <div className="max-w-md mx-auto my-10 p-6 border rounded shadow bg-white">
       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Email */}
@@ -100,12 +100,12 @@ const LoginForm = ({ history, location }) => {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
         >
           Login
         </button>
       </form>
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
