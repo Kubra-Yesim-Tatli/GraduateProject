@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useParams } from "react-router-dom";
 import { LayoutGrid, List } from "lucide-react";
+import ReactPaginate from 'react-paginate';
 import BrandLogos from "../components/BrandLogos";
 import { setProductList, setTotal, setFetchState } from "../Redux/Action/productActions";
 import axios from "axios";
@@ -10,16 +11,24 @@ import { getCategories } from "../redux/Action/categoryAction";
 const ShopPage = () => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const { gender, categoryName, categoryId } = useParams();
   const { productList: products, total, fetchState: loading } = useSelector((state) => state.product);
   const { categories } = useSelector((state) => state.categories);
 
   const [viewMode, setViewMode] = useState("grid");
   const [sort, setSort] = useState("");
   const [filter, setFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 12;
+  const [currentPage, setCurrentPage] = useState(0);
+  const ITEMS_PER_PAGE = 25;
 
-  const totalPages = Math.ceil(total / productsPerPage);
+  const pageCount = Math.ceil(total / ITEMS_PER_PAGE);
+
+  const sortOptions = [
+    { value: "price:asc", label: "Price: Low to High" },
+    { value: "price:desc", label: "Price: High to Low" },
+    { value: "rating:asc", label: "Rating: Low to High" },
+    { value: "rating:desc", label: "Rating: High to Low" }
+  ];
 
   useEffect(() => {
     dispatch(getCategories());
@@ -27,14 +36,30 @@ const ShopPage = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [currentPage, sort, filter]);
+  }, [currentPage, sort, filter, categoryId]);
 
   const fetchProducts = async () => {
     try {
       dispatch(setFetchState("FETCHING"));
-      const response = await axios.get(
-        `https://workintech-fe-ecommerce.onrender.com/products?limit=${productsPerPage}&page=${currentPage}&sort=${sort}&filter=${filter}`
-      );
+      const offset = currentPage * ITEMS_PER_PAGE;
+      let url = `https://workintech-fe-ecommerce.onrender.com/products?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+      
+      // Add category parameter if exists
+      if (categoryId) {
+        url += `&category=${categoryId}`;
+      }
+      
+      // Add sort parameter if exists
+      if (sort) {
+        url += `&sort=${sort}`;
+      }
+      
+      // Add filter parameter if exists
+      if (filter) {
+        url += `&filter=${filter}`;
+      }
+
+      const response = await axios.get(url);
       dispatch(setProductList(response.data.products));
       dispatch(setTotal(response.data.total));
       dispatch(setFetchState("FETCHED"));
@@ -42,6 +67,36 @@ const ShopPage = () => {
       console.error("Error fetching products:", error);
       dispatch(setFetchState("FETCH_ERROR"));
     }
+  };
+
+  const handleSortChange = (e) => {
+    setSort(e.target.value);
+    setCurrentPage(0); // Reset to first page when sort changes
+  };
+
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+    setCurrentPage(0); // Reset to first page when filter changes
+  };
+
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+    window.scrollTo(0, 0); // Scroll to top when page changes
+  };
+
+  const handleCategoryClick = (category) => {
+    const genderPath = category.gender === "k" ? "kadin" : "erkek";
+    const categoryPath = category.code.split(":")[1];
+    history.push(`/shop/${genderPath}/${categoryPath}/${category.id}`);
+    setCurrentPage(0); // Reset to first page when category changes
+  };
+
+  const handleProductClick = (product) => {
+    const productNameSlug = product.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    history.push(`/shop/${gender}/${categoryName}/${categoryId}/${productNameSlug}/${product.id}`);
   };
 
   if (loading === "FETCHING") {
@@ -63,22 +118,31 @@ const ShopPage = () => {
     );
   }
 
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const handleCategoryClick = (category) => {
-    const genderPath = category.gender === "k" ? "kadin" : "erkek";
-    const categoryPath = category.code.split(":")[1];
-    history.push(`/shop/${genderPath}/${categoryPath}`);
-  };
-
-  const handleProductClick = (productId) => {
-    history.push(`/product/${productId}`);
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Filter and Sort Section */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Filter products..."
+          value={filter}
+          onChange={handleFilterChange}
+          className="p-2 border rounded-md flex-1"
+        />
+        <select
+          value={sort}
+          onChange={handleSortChange}
+          className="p-2 border rounded-md"
+        >
+          <option value="">Sort by...</option>
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Category Banners */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {categories?.slice(0, 6).map((category) => (
@@ -118,24 +182,6 @@ const ShopPage = () => {
               <List size={20} />
             </button>
           </div>
-          <input
-            type="text"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filtrele"
-            className="border rounded p-2"
-          />
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="border rounded p-2"
-          >
-            <option value="">Sıralama Seçin</option>
-            <option value="price:asc">Fiyat: Artan</option>
-            <option value="price:desc">Fiyat: Azalan</option>
-            <option value="rating:asc">Değerlendirme: Artan</option>
-            <option value="rating:desc">Değerlendirme: Azalan</option>
-          </select>
         </div>
       </div>
 
@@ -143,15 +189,15 @@ const ShopPage = () => {
       <div
         className={`grid ${
           viewMode === "grid" ? "grid-cols-1 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"
-        } gap-6`}
+        } gap-6 mb-8`}
       >
         {products?.map((product) => (
           <div
             key={product.id}
-            className={`border rounded-lg overflow-hidden hover:shadow-lg transition-shadow ${
+            className={`border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer ${
               viewMode === "list" ? "flex" : ""
             }`}
-            onClick={() => handleProductClick(product.id)}
+            onClick={() => handleProductClick(product)}
           >
             <div className={`relative group ${viewMode === "list" ? "w-1/3" : ""}`}>
               <img
@@ -190,22 +236,20 @@ const ShopPage = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center space-x-2 mt-8">
-          {[...Array(totalPages)].map((_, index) => (
-            <button
-              key={index}
-              onClick={() => handlePageChange(index + 1)}
-              className={`px-4 py-2 rounded ${
-                currentPage === index + 1
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
+      {pageCount > 1 && (
+        <ReactPaginate
+          previousLabel={"← Previous"}
+          nextLabel={"Next →"}
+          pageCount={pageCount}
+          onPageChange={handlePageChange}
+          forcePage={currentPage}
+          containerClassName={"flex justify-center gap-2 my-8"}
+          pageClassName={"border rounded px-3 py-1 hover:bg-gray-100"}
+          previousClassName={"border rounded px-3 py-1 hover:bg-gray-100"}
+          nextClassName={"border rounded px-3 py-1 hover:bg-gray-100"}
+          activeClassName={"bg-blue-500 text-white"}
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+        />
       )}
 
       {/* Brand Logos */}
