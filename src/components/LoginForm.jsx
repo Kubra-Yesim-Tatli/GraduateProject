@@ -1,57 +1,48 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { toast, ToastContainer } from "react-toastify";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import { setUser } from "../Redux/action/clientActions"; // Action'ı import et
-import "react-toastify/dist/ReactToastify.css";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { login } from '../Redux/Action/authActions';
 
-const LoginForm = ({ history, location }) => {
-  const dispatch = useDispatch(); // Redux Dispatch
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+const LoginForm = () => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const auth = useSelector(state => state.auth);
+  const error = auth?.error;
 
-  const onSubmit = async (data) => {
-    try {
-      const response = await axios.post(
-        "https://workintech-fe-ecommerce.onrender.com/login",
-        {
-          email: data.email,
-          password: data.password,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [rememberMe, setRememberMe] = useState(false);
 
-      const result = response.data;
-
-      if (response.status === 200) {
-        dispatch(setUser(result.user)); // Redux store'a kullanıcıyı ekle
-        toast.success("Login successful!");
-
-        if (data.rememberMe) {
-          localStorage.setItem("authToken", result.token);
-        }
-
-        const redirectTo = location.state?.from || "/";
-        history.push(redirectTo);
-      } else {
-        toast.error(result.message || "Login failed");
-      }
-    } catch (error) {
-      toast.error("An error occurred. Please try again.");
+  useEffect(() => {
+    if (auth?.isAuthenticated) {
+      history.push('/');
     }
+  }, [auth?.isAuthenticated, history]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    dispatch(login(formData, rememberMe));
   };
 
   return (
     <div className="max-w-md mx-auto my-10 p-6 border rounded shadow bg-white">
       <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Email */}
+      <form onSubmit={handleSubmit}>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+            {error}
+          </div>
+        )}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="email">
             Email
@@ -59,16 +50,14 @@ const LoginForm = ({ history, location }) => {
           <input
             type="email"
             id="email"
-            {...register("email", { required: "Email is required" })}
-            className={`w-full px-3 py-2 border ${
-              errors.email ? "border-red-500" : "border-gray-300"
-            } rounded`}
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded"
+            required
           />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-          )}
         </div>
-        {/* Password */}
+
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1" htmlFor="password">
             Password
@@ -76,28 +65,27 @@ const LoginForm = ({ history, location }) => {
           <input
             type="password"
             id="password"
-            {...register("password", { required: "Password is required" })}
-            className={`w-full px-3 py-2 border ${
-              errors.password ? "border-red-500" : "border-gray-300"
-            } rounded`}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded"
+            required
           />
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-          )}
         </div>
-        {/* Remember Me */}
+
         <div className="mb-4 flex items-center">
           <input
             type="checkbox"
             id="rememberMe"
-            {...register("rememberMe")}
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
             className="mr-2"
           />
           <label htmlFor="rememberMe" className="text-sm">
             Remember Me
           </label>
         </div>
-        {/* Submit */}
+
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
@@ -105,7 +93,6 @@ const LoginForm = ({ history, location }) => {
           Login
         </button>
       </form>
-      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
