@@ -67,7 +67,9 @@ const CartDropdown = () => {
                                             <div className="flex-1">
                                                 <h4 className="font-medium">{item.product.name}</h4>
                                                 <div className="text-sm text-gray-500">
-                                                    {item.product.size && <span>Beden: {item.product.size}</span>}
+                                                    {item.product.selectedSize && (
+                                                        <span>Beden: {item.product.selectedSize}</span>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center justify-between mt-2">
                                                     <div className="flex items-center space-x-2">
@@ -113,12 +115,13 @@ const CartDropdown = () => {
                                         >
                                             Sepete Git
                                         </Link>
-                                        <button
+                                        <Link
+                                            to="/shop"
                                             onClick={() => dispatch(toggleCartDropdown())}
                                             className="block w-full bg-gray-200 text-gray-800 text-center py-2 rounded-md hover:bg-gray-300"
                                         >
                                             Alışverişe Devam Et
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                             </>

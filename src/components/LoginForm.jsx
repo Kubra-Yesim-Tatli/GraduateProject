@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { login } from '../Redux/Action/authActions';
 
 const LoginForm = () => {
@@ -8,6 +9,7 @@ const LoginForm = () => {
   const history = useHistory();
   const auth = useSelector(state => state.auth);
   const error = auth?.error;
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -16,10 +18,20 @@ const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    if (auth?.isAuthenticated) {
+    if (auth?.isAuthenticated && isLoggingIn) {
+      toast.success('Başarıyla giriş yaptınız!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setIsLoggingIn(false);
       history.push('/');
     }
-  }, [auth?.isAuthenticated, history]);
+  }, [auth?.isAuthenticated, history, isLoggingIn]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +43,7 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoggingIn(true);
     dispatch(login(formData, rememberMe));
   };
 

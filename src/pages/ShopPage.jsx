@@ -7,7 +7,7 @@ import BrandLogos from "../components/BrandLogos";
 import { setProductList, setTotal, setFetchState } from "../Redux/Action/productActions";
 import { getCategories } from "../redux/Action/categoryAction";
 import { addToCart } from "../Redux/Action/cartActions";
-import axios from "axios";
+import axiosInstance from '../api/axiosInstance';
 
 const ShopPage = () => {
   const dispatch = useDispatch();
@@ -55,9 +55,7 @@ const ShopPage = () => {
   useEffect(() => {
     const fetchCategoryProducts = async (categoryId) => {
       try {
-        const response = await axios.get(
-          `https://workintech-fe-ecommerce.onrender.com/products?category=${categoryId}`
-        );
+        const response = await axiosInstance.get(`/products?category=${categoryId}`);
         setCategoryProducts(prev => ({
           ...prev,
           [categoryId]: response.data.total
@@ -82,7 +80,7 @@ const ShopPage = () => {
     try {
       dispatch(setFetchState("FETCHING"));
       const offset = currentPage * ITEMS_PER_PAGE;
-      let url = `https://workintech-fe-ecommerce.onrender.com/products?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+      let url = `/products?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
       
       // Kategori ID'si varsa, o kategorinin ürünlerini getir
       if (categoryId) {
@@ -99,7 +97,7 @@ const ShopPage = () => {
         url += `&filter=${filter}`;
       }
 
-      const response = await axios.get(url);
+      const response = await axiosInstance.get(url);
       dispatch(setProductList(response.data.products));
       dispatch(setTotal(response.data.total));
       dispatch(setFetchState("FETCHED"));

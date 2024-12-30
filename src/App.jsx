@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Route, Switch, useLocation } from "react-router-dom";
 import React, { useEffect } from "react";
 import { Provider, useDispatch } from 'react-redux';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Header from "./layout/Header";
 import Footer from "./layout/Footer";
@@ -15,11 +17,20 @@ import CategoryPage from './pages/CategoryPage';
 import CartPage from './pages/CartPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AddressPage from './pages/CreateOrder/AddressPage';
-import { verifyToken } from './Redux/Action/authActions';
+import { verifyToken, setUser } from './Redux/Action/authActions';
 
 // Create a wrapper component that uses Redux hooks
 const AppContent = () => {
+  const dispatch = useDispatch();
   const location = useLocation();
+
+  useEffect(() => {
+    // Sayfa yüklendiğinde localStorage'dan kullanıcı bilgilerini kontrol et
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      dispatch(setUser(JSON.parse(savedUser)));
+    }
+  }, [dispatch]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,6 +71,18 @@ function App() {
         <Router>
           <AuthWrapper>
             <AppContent />
+            <ToastContainer 
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
           </AuthWrapper>
         </Router>
       </UserProvider>

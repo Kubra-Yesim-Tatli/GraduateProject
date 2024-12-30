@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 // Action Types
 export const SET_USER = 'SET_USER';
@@ -6,26 +6,37 @@ export const SET_AUTH_ERROR = 'SET_AUTH_ERROR';
 export const LOGOUT = 'LOGOUT';
 
 // Action Creators
-export const setUser = (user) => ({
-  type: SET_USER,
-  payload: user,
-});
+export const setUser = (user) => {
+  // Kullanıcı bilgilerini localStorage'a kaydet
+  if (user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+  return {
+    type: SET_USER,
+    payload: user,
+  };
+};
 
 export const setAuthError = (error) => ({
   type: SET_AUTH_ERROR,
   payload: error,
 });
 
-export const logout = () => ({
-  type: LOGOUT,
-});
+export const logout = () => {
+  // Kullanıcı bilgilerini localStorage'dan sil
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');
+  return {
+    type: LOGOUT,
+  };
+};
 
 // Helper Functions
 const setAxiosToken = (token) => {
   if (token) {
-    axios.defaults.headers.common['Authorization'] = token;
+    axiosInstance.defaults.headers.common['Authorization'] = token;
   } else {
-    delete axios.defaults.headers.common['Authorization'];
+    delete axiosInstance.defaults.headers.common['Authorization'];
   }
 };
 
@@ -33,56 +44,46 @@ const setAxiosToken = (token) => {
 export const verifyToken = () => async (dispatch) => {
   try {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const savedUser = localStorage.getItem('user');
+    
+    if (!token || !savedUser) {
       return;
     }
 
     // Set token in axios headers
     setAxiosToken(token);
 
-    // Verify token
-    const response = await axios.get('https://workintech-fe-ecommerce.onrender.com/verify');
-    
-    // If verification successful, update user in store
-    dispatch(setUser(response.data));
+    // Parse saved user
+    const user = JSON.parse(savedUser);
+    dispatch(setUser(user));
 
-    // Renew token if new token is provided in response
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      setAxiosToken(response.data.token);
-    }
   } catch (error) {
-    // Clear invalid token
+    console.error('Token verification failed:', error);
+    dispatch(setAuthError('Session expired'));
     localStorage.removeItem('token');
-    setAxiosToken(null);
-    dispatch(setAuthError(error.response?.data?.message || 'Token verification failed'));
+    localStorage.removeItem('user');
   }
 };
 
 export const login = (credentials, rememberMe) => async (dispatch) => {
   try {
-    const response = await axios.post('https://workintech-fe-ecommerce.onrender.com/login', credentials);
+    const response = await axiosInstance.post('/login', credentials);
     
-    // Always store token
-    localStorage.setItem('token', response.data.token);
-    
-    // Set token in axios headers
-    setAxiosToken(response.data.token);
-    
-    // Update user in store
+    if (response.data.token) {
+      // Token'ı kaydet
+      localStorage.setItem('token', response.data.token);
+      setAxiosToken(response.data.token);
+    }
+
     dispatch(setUser(response.data.user));
+    
   } catch (error) {
+    console.error('Login failed:', error);
     dispatch(setAuthError(error.response?.data?.message || 'Login failed'));
   }
 };
 
 export const logoutUser = () => (dispatch) => {
-  // Clear token from localStorage
-  localStorage.removeItem('token');
-  
-  // Clear token from axios headers
   setAxiosToken(null);
-  
-  // Clear user from store
   dispatch(logout());
 };

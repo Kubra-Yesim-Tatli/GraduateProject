@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 // Action Types
 export const SET_CATEGORIES = 'SET_CATEGORIES';
@@ -24,7 +24,7 @@ export const setFilter = (filter) => ({ type: SET_FILTER, payload: filter });
 export const fetchProductDetail = (productId) => async (dispatch) => {
   try {
     dispatch(setFetchState('FETCHING'));
-    const response = await axios.get(`https://workintech-fe-ecommerce.onrender.com/products/${productId}`);
+    const response = await axiosInstance.get(`/products/${productId}`);
     dispatch(setProductDetail(response.data));
     dispatch(setFetchState('FETCHED'));
   } catch (error) {

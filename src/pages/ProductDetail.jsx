@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import { Heart, Share2, ShoppingCart, ChevronLeft } from 'lucide-react';
@@ -13,6 +13,7 @@ const ProductDetail = () => {
   
   const { productDetail: product, fetchState: loading } = useSelector((state) => state.product);
   const { cart } = useSelector((state) => state.cart);
+  const [selectedSize, setSelectedSize] = useState(null);
 
   useEffect(() => {
     if (productId) {
@@ -25,8 +26,11 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    if (product?.stock > 0) {
-      dispatch(addToCart(product));
+    if (product?.stock > 0 && selectedSize) {
+      dispatch(addToCart({
+        ...product,
+        selectedSize
+      }));
     }
   };
 
@@ -38,6 +42,12 @@ const ProductDetail = () => {
     if (!product?.stock) return { text: "Stokta Yok", color: "red" };
     if (product.stock <= 5) return { text: `Son ${product.stock} Ürün`, color: "orange" };
     return { text: "Stokta Mevcut", color: "green" };
+  };
+
+  // Dinamik beden seçenekleri
+  const getSizeOptions = () => {
+    if (!product?.sizes) return ["XS", "S", "M", "L", "XL"]; // Varsayılan bedenler
+    return product.sizes;
   };
 
   const renderStars = (rating) => {
@@ -173,28 +183,40 @@ const ProductDetail = () => {
             <div className="mb-6">
               <h3 className="font-medium mb-2">Beden</h3>
               <div className="flex gap-2">
-                {["XS", "S", "M", "L", "XL"].map((size) => (
+                {getSizeOptions().map((size) => (
                   <button
                     key={size}
-                    className="w-12 h-12 border rounded-lg hover:border-[#0891b2] flex items-center justify-center"
+                    onClick={() => setSelectedSize(size)}
+                    className={`w-12 h-12 border rounded-lg flex items-center justify-center transition-all
+                      ${selectedSize === size 
+                        ? 'border-[#0891b2] bg-[#0891b2] text-white' 
+                        : 'hover:border-[#0891b2]'
+                      }`}
                   >
                     {size}
                   </button>
                 ))}
               </div>
+              {!selectedSize && (
+                <p className="text-red-500 text-sm mt-2">
+                  Lütfen bir beden seçiniz
+                </p>
+              )}
             </div>
 
             {/* Add to Cart Button */}
             <div className="flex gap-4">
               <button
                 onClick={handleAddToCart}
-                disabled={!product.stock}
+                disabled={!product.stock || !selectedSize}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg ${
-                  product.stock ? 'bg-[#0891b2] hover:bg-[#0891b2]/90 text-white' : 'bg-gray-300 cursor-not-allowed text-gray-500'
+                  product.stock && selectedSize 
+                    ? 'bg-[#0891b2] hover:bg-[#0891b2]/90 text-white' 
+                    : 'bg-gray-300 cursor-not-allowed text-gray-500'
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
-                {isProductInCart() ? "Sepette" : "Sepete Ekle"}
+                {isProductInCart() ? `Sepette (${selectedSize})` : "Sepete Ekle"}
               </button>
               <button className="w-12 h-12 border rounded-lg hover:border-[#0891b2] flex items-center justify-center">
                 <Heart className="w-5 h-5" />
@@ -203,41 +225,10 @@ const ProductDetail = () => {
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Additional Info */}
-            <div className="mt-8 border-t pt-8">
-              <h3 className="font-medium mb-4">Ürün Detayları</h3>
-              <div className="space-y-2">
-                <div className="flex">
-                  <span className="w-32 text-gray-600">Kategori:</span>
-                  <span>{product?.category?.name || 'Belirtilmemiş'}</span>
-                </div>
-                <div className="flex">
-                  <span className="w-32 text-gray-600">Stok Kodu:</span>
-                  <span>{product?.id || 'Belirtilmemiş'}</span>
-                </div>
-                <div className="flex">
-                  <span className="w-32 text-gray-600">Stok Durumu:</span>
-                  <span className={`text-${stockStatus.color}-500`}>{stockStatus.text}</span>
-                </div>
-                <div className="flex">
-                  <span className="w-32 text-gray-600">Puan:</span>
-                  <div className="flex items-center gap-2">
-                    {renderStars(product?.rating || 0)}
-                    <span className="text-gray-600">
-                      ({product?.rating?.toFixed(1) || "0.0"})
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-
-        {/* Brand Logos */}
-        <div className="mt-16">
-          <BrandLogos />
-        </div>
+        
+        <BrandLogos />
       </div>
     </main>
   );
