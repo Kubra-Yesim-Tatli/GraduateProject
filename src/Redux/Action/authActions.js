@@ -63,10 +63,8 @@ export const login = (credentials, rememberMe) => async (dispatch) => {
   try {
     const response = await axios.post('https://workintech-fe-ecommerce.onrender.com/login', credentials);
     
-    // If remember me is checked, store token
-    if (rememberMe) {
-      localStorage.setItem('token', response.data.token);
-    }
+    // Always store token
+    localStorage.setItem('token', response.data.token);
     
     // Set token in axios headers
     setAxiosToken(response.data.token);

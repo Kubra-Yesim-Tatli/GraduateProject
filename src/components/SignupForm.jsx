@@ -11,17 +11,15 @@ const SignupForm = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   
-  const roles = useSelector((state) => state.client.roles) || [];
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
-  const password = watch("password");
-
-  // Sabit roller
-  const ROLES = [
+  const roles = [
     { id: "customer", name: "Customer" },
     { id: "store", name: "Store" },
     { id: "admin", name: "Admin" }
   ];
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const password = watch("password");
 
   useEffect(() => {
     dispatch(fetchRolesIfNeeded());
@@ -149,7 +147,7 @@ const SignupForm = () => {
             className="border px-3 py-2 w-full rounded"
           >
             <option value="">Select...</option>
-            {ROLES.map((role) => (
+            {roles.map((role) => (
               <option key={role.id} value={role.id}>
                 {role.name}
               </option>

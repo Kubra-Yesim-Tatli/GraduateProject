@@ -1,11 +1,14 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { removeFromCart, updateCartItemCount, toggleCartItemCheck } from '../Redux/Action/cartActions';
 
 const CartPage = () => {
     const dispatch = useDispatch();
+    const history = useHistory();
     const { cart } = useSelector((state) => state.cart);
+    const { isAuthenticated } = useSelector((state) => state.auth);
 
     const handleQuantityChange = (item, change) => {
         const newCount = item.count + change;
@@ -42,6 +45,14 @@ const CartPage = () => {
         const shipping = calculateShipping(subtotal);
         const discount = calculateDiscount(subtotal);
         return subtotal + shipping - discount;
+    };
+
+    const handleCheckout = () => {
+        if (!isAuthenticated) {
+            history.push('/login', { from: '/cart' });
+        } else {
+            history.push('/create-order/address');
+        }
     };
 
     if (cart.length === 0) {
@@ -143,6 +154,7 @@ const CartPage = () => {
                                 <span>{calculateSubtotal().toFixed(2)} TL</span>
                             </div>
                             
+
                             <div className="flex justify-between text-gray-600">
                                 <span>Kargo Toplam</span>
                                 <span>{calculateShipping(calculateSubtotal()).toFixed(2)} TL</span>
@@ -155,6 +167,7 @@ const CartPage = () => {
                                 </div>
                             )}
                             
+
                             <div className="border-t pt-4 mt-4">
                                 <div className="flex justify-between items-center text-lg font-bold">
                                     <span>Toplam</span>
@@ -164,7 +177,7 @@ const CartPage = () => {
 
                             <button 
                                 className="w-full bg-[#0891b2] text-white py-3 px-4 rounded-md hover:bg-[#0891b2]/90 transition-colors mt-6"
-                                onClick={() => {/* Sipariş oluşturma fonksiyonu henüz eklenmedi */}}
+                                onClick={handleCheckout}
                             >
                                 Sepeti Onayla
                             </button>
