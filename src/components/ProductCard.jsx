@@ -1,10 +1,6 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../Redux/Action/cartActions";
 
 const ProductCard = () => {
-  const dispatch = useDispatch();
-
   const products = [
     { title: "Graphic Design", department: "English Department", oldPrice: "$16.48", newPrice: "$6.48", images: [{ url: "/img/img1.jfif" }], name: "Graphic Design", description: "Problems trying to resolve the conflict between", price: "$6.48" },
     { title: "Graphic Design", department: "English Department", oldPrice: "$16.48", newPrice: "$6.48", images: [{ url: "/img/img2.jfif" }], name: "Graphic Design", description: "Problems trying to resolve the conflict between", price: "$6.48" },
@@ -15,10 +11,6 @@ const ProductCard = () => {
     { title: "Graphic Design", department: "English Department", oldPrice: "$16.48", newPrice: "$6.48", images: [{ url: "/img/img7.jfif" }], name: "Graphic Design", description: "Problems trying to resolve the conflict between", price: "$6.48" },
     { title: "Graphic Design", department: "English Department", oldPrice: "$16.48", newPrice: "$6.48", images: [{ url: "/img/img8.jfif" }], name: "Graphic Design", description: "Problems trying to resolve the conflict between", price: "$6.48" },
   ];
-
-  const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
-  };
 
   return (
     <div className="p-4">
@@ -48,12 +40,6 @@ const ProductCard = () => {
                 )}
                 <span className="text-green-600 font-bold">{product.newPrice} TL</span>
               </div>
-              <button
-                onClick={() => handleAddToCart(product)}
-                className="w-full bg-orange-500 text-white py-2 rounded-md hover:bg-orange-600 transition-colors"
-              >
-                Sepete Ekle
-              </button>
             </div>
           </div>
         ))}

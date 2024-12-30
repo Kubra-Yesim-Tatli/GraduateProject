@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useHistory, useParams } from "react-router-dom";
 import { LayoutGrid, List } from "lucide-react";
@@ -21,6 +21,7 @@ const ShopPage = () => {
   const [sort, setSort] = useState("");
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
+  const [categoryProducts, setCategoryProducts] = useState({});
   const ITEMS_PER_PAGE = 25;
 
   const pageCount = Math.ceil(total / ITEMS_PER_PAGE);
@@ -32,9 +33,46 @@ const ShopPage = () => {
     { value: "rating:desc", label: "Rating: High to Low" }
   ];
 
+  // Kategorileri erkek/kadın olarak grupla
+  const groupedCategories = useMemo(() => {
+    if (!categories) return { men: [], women: [] };
+    
+    return categories.reduce((acc, category) => {
+      if (category.gender === "e") {
+        acc.men.push(category);
+      } else if (category.gender === "k") {
+        acc.women.push(category);
+      }
+      return acc;
+    }, { men: [], women: [] });
+  }, [categories]);
+
   useEffect(() => {
     dispatch(getCategories());
   }, [dispatch]);
+
+  // Her kategori için ürün sayısını çek
+  useEffect(() => {
+    const fetchCategoryProducts = async (categoryId) => {
+      try {
+        const response = await axios.get(
+          `https://workintech-fe-ecommerce.onrender.com/products?category=${categoryId}`
+        );
+        setCategoryProducts(prev => ({
+          ...prev,
+          [categoryId]: response.data.total
+        }));
+      } catch (error) {
+        console.error("Error fetching category products:", error);
+      }
+    };
+
+    if (categories) {
+      categories.forEach(category => {
+        fetchCategoryProducts(category.id);
+      });
+    }
+  }, [categories]);
 
   useEffect(() => {
     fetchProducts();
@@ -160,24 +198,78 @@ const ShopPage = () => {
       </div>
 
       {/* Category Banners */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        {categories?.slice(0, 6).map((category) => (
-          <div
-            key={category.id}
-            className="relative group overflow-hidden rounded-lg aspect-[4/3] cursor-pointer"
-            onClick={() => handleCategoryClick(category)}
-          >
-            <img
-              src={category.img}
-              alt={category.title}
-              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-white transition-opacity group-hover:bg-opacity-50">
-              <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
-              <p className="text-lg">{category.product_count || "5"} items</p>
-            </div>
+      <div className="space-y-12 mb-12">
+        {/* Kadın Kategorileri */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Kadın Kategorileri</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {groupedCategories.women.map((category) => (
+              <div
+                key={category.id}
+                className="relative group overflow-hidden rounded-lg aspect-[4/3] cursor-pointer shadow-md hover:shadow-lg transition-all duration-300"
+                onClick={() => handleCategoryClick(category)}
+              >
+                <img
+                  src={category.img || `https://source.unsplash.com/400x400/?womens-${category.name}`}
+                  alt={category.title}
+                  className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col items-center justify-end p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
+                  <div className="flex items-center gap-4">
+                    <p className="text-lg">
+                      <span className="font-semibold">{categoryProducts[category.id] || 0}</span> ürün
+                    </p>
+                    {category.rating && (
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1">{category.rating.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Erkek Kategorileri */}
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Erkek Kategorileri</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {groupedCategories.men.map((category) => (
+              <div
+                key={category.id}
+                className="relative group overflow-hidden rounded-lg aspect-[4/3] cursor-pointer shadow-md hover:shadow-lg transition-all duration-300"
+                onClick={() => handleCategoryClick(category)}
+              >
+                <img
+                  src={category.img || `https://source.unsplash.com/400x400/?mens-${category.name}`}
+                  alt={category.title}
+                  className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col items-center justify-end p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
+                  <div className="flex items-center gap-4">
+                    <p className="text-lg">
+                      <span className="font-semibold">{categoryProducts[category.id] || 0}</span> ürün
+                    </p>
+                    {category.rating && (
+                      <div className="flex items-center">
+                        <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1">{category.rating.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Header */}
