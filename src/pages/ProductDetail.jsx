@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import { Heart, Share2, ShoppingCart, ChevronLeft } from 'lucide-react';
 import { fetchProductDetail } from '../Redux/Action/productActions';
+import { addToCart } from '../Redux/Action/cartActions';
 import BrandLogos from '../components/BrandLogos';
 
 const ProductDetail = () => {
@@ -11,6 +12,7 @@ const ProductDetail = () => {
   const { gender, categoryName, categoryId, productNameSlug, productId } = useParams();
   
   const { productDetail: product, fetchState: loading } = useSelector((state) => state.product);
+  const { cart } = useSelector((state) => state.cart);
 
   useEffect(() => {
     if (productId) {
@@ -20,6 +22,14 @@ const ProductDetail = () => {
 
   const handleBack = () => {
     history.push(`/shop/${gender}/${categoryName}/${categoryId}`);
+  };
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+  };
+
+  const isProductInCart = () => {
+    return cart.some(item => item.product.id === product?.id);
   };
 
   // Loading state
@@ -117,9 +127,16 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex gap-4">
-              <button className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+              <button 
+                onClick={handleAddToCart}
+                className={`flex-1 py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                  isProductInCart()
+                    ? 'bg-[#0891b2] hover:bg-[#0891b2]/90 text-white'
+                    : 'bg-[#0891b2] hover:bg-[#0891b2]/90 text-white'
+                }`}
+              >
                 <ShoppingCart className="w-5 h-5" />
-                Sepete Ekle
+                {isProductInCart() ? 'Sepette' : 'Sepete Ekle'}
               </button>
               <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
                 <Heart className="w-5 h-5" />

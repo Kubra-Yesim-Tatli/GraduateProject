@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Gravatar from "react-gravatar";
 import { UserContext } from "./UserContext";
 import CategoryDropdown from "../components/CategoryDropdown";
+import CartDropdown from "../components/CartDropdown";
 
 const Header = () => {
   const { user, logout } = useContext(UserContext); 
@@ -51,9 +52,7 @@ const Header = () => {
         <button className="p-2 rounded-full hover:bg-gray-100">
           <Search size={20} />
         </button>
-        <button className="p-2 rounded-full hover:bg-gray-100">
-          <ShoppingCart size={20} />
-        </button>
+        <CartDropdown />
         
         {/* Hamburger Menu */}
         <button

@@ -5,8 +5,9 @@ import { LayoutGrid, List } from "lucide-react";
 import ReactPaginate from 'react-paginate';
 import BrandLogos from "../components/BrandLogos";
 import { setProductList, setTotal, setFetchState } from "../Redux/Action/productActions";
-import axios from "axios";
 import { getCategories } from "../redux/Action/categoryAction";
+import { addToCart } from "../Redux/Action/cartActions";
+import axios from "axios";
 
 const ShopPage = () => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const ShopPage = () => {
   const { gender, categoryName, categoryId } = useParams();
   const { productList: products, total, fetchState: loading } = useSelector((state) => state.product);
   const { categories } = useSelector((state) => state.categories);
+  const { cart } = useSelector((state) => state.cart);
 
   const [viewMode, setViewMode] = useState("grid");
   const [sort, setSort] = useState("");
@@ -44,17 +46,17 @@ const ShopPage = () => {
       const offset = currentPage * ITEMS_PER_PAGE;
       let url = `https://workintech-fe-ecommerce.onrender.com/products?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
       
-      // Add category parameter if exists
+      // Kategori ID'si varsa, o kategorinin ürünlerini getir
       if (categoryId) {
         url += `&category=${categoryId}`;
       }
       
-      // Add sort parameter if exists
+      // Sıralama parametresi varsa ekle
       if (sort) {
         url += `&sort=${sort}`;
       }
       
-      // Add filter parameter if exists
+      // Filtreleme parametresi varsa ekle
       if (filter) {
         url += `&filter=${filter}`;
       }
@@ -88,7 +90,7 @@ const ShopPage = () => {
     const genderPath = category.gender === "k" ? "kadin" : "erkek";
     const categoryPath = category.code.split(":")[1];
     history.push(`/shop/${genderPath}/${categoryPath}/${category.id}`);
-    setCurrentPage(0); // Reset to first page when category changes
+    setCurrentPage(0); // Kategori değiştiğinde ilk sayfaya dön
   };
 
   const handleProductClick = (product) => {
@@ -96,7 +98,21 @@ const ShopPage = () => {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-    history.push(`/shop/${gender}/${categoryName}/${categoryId}/${productNameSlug}/${product.id}`);
+    
+    const genderPath = gender || (product.gender === "k" ? "kadin" : "erkek");
+    const categoryPath = categoryName || product.category?.code?.split(":")[1] || "kategori";
+    const catId = categoryId || product.category?.id || "0";
+    
+    history.push(`/shop/${genderPath}/${categoryPath}/${catId}/${productNameSlug}/${product.id}`);
+  };
+
+  const handleAddToCart = (product, e) => {
+    e.stopPropagation(); // Ürün detayına gitmesini engelle
+    dispatch(addToCart(product));
+  };
+
+  const isProductInCart = (productId) => {
+    return cart.some(item => item.product.id === productId);
   };
 
   if (loading === "FETCHING") {
@@ -157,7 +173,7 @@ const ShopPage = () => {
               className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center text-white transition-opacity group-hover:bg-opacity-50">
-              <h3 className="text-2xl font-bold mb-2">{category.title.toUpperCase()}</h3>
+              <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
               <p className="text-lg">{category.product_count || "5"} items</p>
             </div>
           </div>
@@ -186,50 +202,36 @@ const ShopPage = () => {
       </div>
 
       {/* Products Grid */}
-      <div
-        className={`grid ${
-          viewMode === "grid" ? "grid-cols-1 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1"
-        } gap-6 mb-8`}
-      >
+      <div className={`grid ${
+        viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-1"
+      } gap-4`}>
         {products?.map((product) => (
           <div
             key={product.id}
-            className={`border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer ${
-              viewMode === "list" ? "flex" : ""
-            }`}
-            onClick={() => handleProductClick(product)}
+            className="group cursor-pointer hover:shadow-lg transition-shadow duration-300 bg-white rounded-lg overflow-hidden"
           >
-            <div className={`relative group ${viewMode === "list" ? "w-1/3" : ""}`}>
+            <div onClick={() => handleProductClick(product)}>
               <img
-                src={product.images[0].url}
+                src={product.images[0]?.url || "placeholder.jpg"}
                 alt={product.name}
-                className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity flex items-center justify-center">
-                <div className="transform translate-y-full group-hover:translate-y-0 transition-transform">
-                  <span className="bg-white text-gray-900 px-6 py-2 rounded-full hover:bg-gray-100">
-                    Detayları Gör
-                  </span>
-                </div>
+              <div className="p-4">
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-gray-600">{product.price} TL</p>
               </div>
             </div>
-            <div className={`p-4 ${viewMode === "list" ? "w-2/3" : ""}`}>
-              <h3 className="font-semibold text-lg mb-2 line-clamp-1">{product.name}</h3>
-              <p className={`text-gray-600 mb-3 text-sm ${viewMode === "list" ? "" : "line-clamp-2"}`}>
-                {product.description}
-              </p>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg font-bold text-blue-600">${product.price}</span>
-                  {product.rating > 0 && (
-                    <div className="flex items-center text-yellow-400">
-                      <span>★</span>
-                      <span className="ml-1 text-sm text-gray-600">{product.rating.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="text-sm text-gray-500">{product.stock} adet</div>
-              </div>
+            <div className="px-4 pb-4">
+              <button
+                onClick={(e) => handleAddToCart(product, e)}
+                className={`w-full py-2 rounded-md transition-colors ${
+                  isProductInCart(product.id)
+                    ? "bg-[#0891b2] hover:bg-[#0891b2]/90 text-white"
+                    : "bg-[#0891b2] hover:bg-[#0891b2]/90 text-white"
+                }`}
+              >
+                {isProductInCart(product.id) ? "Sepette" : "Sepete Ekle"}
+              </button>
             </div>
           </div>
         ))}
