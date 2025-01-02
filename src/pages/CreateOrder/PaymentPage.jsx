@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import CreditCardForm from '../../components/CreditCardForm';
-import axiosInstance from '../../api/axiosInstance';
 
 const PaymentPage = () => {
   const history = useHistory();
@@ -13,7 +12,12 @@ const PaymentPage = () => {
   const [editingCard, setEditingCard] = useState(null);
 
   useEffect(() => {
-    fetchCards();
+    // Load cards from localStorage
+    const savedCards = JSON.parse(localStorage.getItem('userCards') || '[]');
+    setCards(savedCards);
+    if (savedCards.length > 0 && !selectedCard) {
+      setSelectedCard(savedCards[0]);
+    }
   }, []);
 
   const fetchCards = async () => {
@@ -31,38 +35,52 @@ const PaymentPage = () => {
 
   const handleCardSubmit = async (data) => {
     try {
+      const newCard = {
+        id: Date.now(),
+        ...data
+      };
+
       if (isEditing) {
-        await axiosInstance.put('/user/card', {
-          ...data,
-          id: editingCard.id
-        });
+        // Update existing card
+        const updatedCards = cards.map(card =>
+          card.id === editingCard.id ? { ...newCard, id: card.id } : card
+        );
+        setCards(updatedCards);
+        localStorage.setItem('userCards', JSON.stringify(updatedCards));
         toast.success('Kart başarıyla güncellendi');
       } else {
-        await axiosInstance.post('/user/card', data);
+        // Add new card
+        const updatedCards = [...cards, newCard];
+        setCards(updatedCards);
+        localStorage.setItem('userCards', JSON.stringify(updatedCards));
         toast.success('Kart başarıyla eklendi');
       }
-      fetchCards();
+
       setIsAddingNew(false);
       setIsEditing(false);
       setEditingCard(null);
+      setSelectedCard(newCard);
     } catch (error) {
       console.error('Error saving card:', error);
-      toast.error(error.response?.data?.message || 'Kart kaydedilirken bir hata oluştu');
+      toast.error('Kart kaydedilirken bir hata oluştu');
     }
   };
 
-  const handleCardDelete = async (cardId) => {
+  const handleCardDelete = (cardId) => {
     if (!window.confirm('Bu kartı silmek istediğinizden emin misiniz?')) {
       return;
     }
 
     try {
-      await axiosInstance.delete(`/user/card/${cardId}`);
-      toast.success('Kart başarıyla silindi');
+      const updatedCards = cards.filter(card => card.id !== cardId);
+      setCards(updatedCards);
+      localStorage.setItem('userCards', JSON.stringify(updatedCards));
+      
       if (selectedCard?.id === cardId) {
-        setSelectedCard(null);
+        setSelectedCard(updatedCards[0] || null);
       }
-      fetchCards();
+      
+      toast.success('Kart başarıyla silindi');
     } catch (error) {
       console.error('Error deleting card:', error);
       toast.error('Kart silinirken bir hata oluştu');
@@ -76,7 +94,62 @@ const PaymentPage = () => {
   };
 
   const formatCardNumber = (cardNo) => {
-    return `**** **** **** ${cardNo.slice(-4)}`;
+    if (!cardNo) return '****';
+    return `**** **** **** ${cardNo.toString().slice(-4)}`;
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!selectedCard) {
+      toast.error('Lütfen bir kart seçin');
+      return;
+    }
+
+    try {
+      // Get addresses from localStorage
+      const shippingAddress = JSON.parse(localStorage.getItem('shippingAddress'));
+      const billingAddress = JSON.parse(localStorage.getItem('billingAddress'));
+      
+      if (!shippingAddress) {
+        toast.error('Teslimat adresi bulunamadı');
+        return;
+      }
+
+      // Create order object
+      const order = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        shipping_address: shippingAddress,
+        billing_address: billingAddress || shippingAddress,
+        payment: {
+          card_number: selectedCard.card_number,
+          card_holder: selectedCard.card_holder,
+          expire_month: selectedCard.expire_month,
+          expire_year: selectedCard.expire_year
+        },
+        status: 'pending'
+      };
+
+      // Save order to localStorage
+      const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      existingOrders.push(order);
+      localStorage.setItem('orders', JSON.stringify(existingOrders));
+
+      // Clear order data
+      localStorage.removeItem('shippingAddress');
+      localStorage.removeItem('billingAddress');
+      localStorage.removeItem('selectedPaymentCard');
+
+      // Show success message and redirect to home
+      toast.success('Siparişiniz başarıyla oluşturuldu!', {
+        onClose: () => {
+          history.push('/');
+        },
+        autoClose: 2000 // 2 saniye sonra kapanacak
+      });
+    } catch (error) {
+      console.error('Order error:', error);
+      toast.error('Sipariş oluşturulurken bir hata oluştu');
+    }
   };
 
   return (
@@ -131,10 +204,10 @@ const PaymentPage = () => {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="font-medium">{card.name_on_card}</div>
-                    <div className="text-gray-600">{formatCardNumber(card.card_no)}</div>
+                    <div className="font-medium">{card.card_holder || card.name_on_card}</div>
+                    <div className="text-gray-600">{formatCardNumber(card.card_number || card.card_no)}</div>
                     <div className="text-sm text-gray-500">
-                      Son Kullanma: {card.expire_month.toString().padStart(2, '0')}/{card.expire_year}
+                      Son Kullanma: {(card.expire_month || '').toString().padStart(2, '0')}/{card.expire_year || ''}
                     </div>
                   </div>
                   <div className="flex space-x-2">
@@ -166,22 +239,16 @@ const PaymentPage = () => {
 
       <div className="mt-8 flex justify-end space-x-4">
         <button
-          onClick={() => history.push('/create-order/address')}
+          onClick={() => history.push('/order/address')}
           className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
         >
           Geri
         </button>
         <button
-          onClick={() => {
-            if (!selectedCard) {
-              toast.error('Lütfen bir kart seçin');
-              return;
-            }
-            history.push('/create-order/summary');
-          }}
+          onClick={handleConfirmOrder}
           className="px-6 py-2 bg-[#0891b2] text-white rounded-md hover:bg-[#0891b2]/90"
         >
-          Devam Et
+          Siparişi Onayla
         </button>
       </div>
     </div>

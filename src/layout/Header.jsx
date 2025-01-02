@@ -51,8 +51,14 @@ const Header = () => {
               className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-gray-100"
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             >
-              <Gravatar email={user?.email} className="rounded-full w-8 h-8 border border-gray-300" />
-              <span className="text-sm font-medium">{user?.name || "User"}</span>
+              {user?.email ? (
+                <Gravatar email={user.email} className="rounded-full w-8 h-8 border border-gray-300" />
+              ) : (
+                <div className="w-8 h-8 rounded-full border border-gray-300 bg-gray-100 flex items-center justify-center">
+                  <User size={16} className="text-gray-500" />
+                </div>
+              )}
+              <span className="text-sm font-medium">{user?.name || "Kullanıcı"}</span>
               <ChevronDown size={16} className={`transform transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
             </div>
 

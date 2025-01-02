@@ -51,11 +51,11 @@ const AppContent = () => {
           <Route exact path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
           <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetail} />
           <Route path="/cart" component={CartPage} />
-          <ProtectedRoute path="/order/address" component={AddressPage} />
-          <ProtectedRoute path="/order/payment" component={PaymentPage} />
-          <ProtectedRoute path="/order/complete" component={CompletePage} />
-          <ProtectedRoute path="/order/success" component={OrderSuccessPage} />
-          <ProtectedRoute path="/profile/orders" component={PreviousOrdersPage} />
+          <ProtectedRoute exact path="/order/address" component={AddressPage} />
+          <ProtectedRoute exact path="/order/payment" component={PaymentPage} />
+          <ProtectedRoute exact path="/order/complete" component={CompletePage} />
+          <ProtectedRoute exact path="/order/success" component={OrderSuccessPage} />
+          <ProtectedRoute exact path="/profile/orders" component={PreviousOrdersPage} />
         </Switch>
       </main>
       <Footer />
