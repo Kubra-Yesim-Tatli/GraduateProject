@@ -1,143 +1,151 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../api/axiosInstance';
-import { toast } from 'react-toastify';
+import { useHistory } from 'react-router-dom';
 
 const PreviousOrdersPage = () => {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedOrder, setExpandedOrder] = useState(null);
+  const history = useHistory();
 
   useEffect(() => {
-    fetchOrders();
+    try {
+      const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+      if (Array.isArray(savedOrders)) {
+        setOrders(savedOrders.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      } else {
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      setOrders([]);
+    }
   }, []);
 
-  const fetchOrders = async () => {
+  const formatDate = (dateString) => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.get('/order');
-      setOrders(response.data);
+      const date = new Date(dateString);
+      return date.toLocaleDateString('tr-TR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Siparişler yüklenirken bir hata oluştu');
-    } finally {
-      setLoading(false);
+      return dateString;
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'Beklemede';
+      case 'processing':
+        return 'İşleniyor';
+      case 'shipped':
+        return 'Kargoda';
+      case 'delivered':
+        return 'Teslim Edildi';
+      default:
+        return 'Beklemede';
+    }
   };
 
-  const toggleOrderDetails = (orderId) => {
-    setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'processing':
+        return 'bg-blue-100 text-blue-800';
+      case 'shipped':
+        return 'bg-purple-100 text-purple-800';
+      case 'delivered':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  if (loading) {
+  if (!Array.isArray(orders) || orders.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">Siparişlerim</h1>
+        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+          <p className="text-gray-600">Henüz siparişiniz bulunmamaktadır.</p>
+          <button
+            onClick={() => history.push('/shop')}
+            className="mt-4 text-[#0891b2] hover:text-[#0891b2]/90"
+          >
+            Alışverişe Başla
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Önceki Siparişlerim</h1>
+      <h1 className="text-2xl font-bold mb-6">Siparişlerim</h1>
       
-      {orders.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-6 text-center">
-          <p className="text-gray-600">Henüz hiç siparişiniz bulunmamaktadır.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-lg shadow overflow-hidden">
-              <div
-                className="p-4 cursor-pointer hover:bg-gray-50 flex items-center justify-between"
-                onClick={() => toggleOrderDetails(order.id)}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">Sipariş #{order.id}</span>
-                    <span className="text-gray-600">{formatDate(order.order_date)}</span>
+      <div className="space-y-6">
+        {orders.map((order) => (
+          order && order.items && Array.isArray(order.items) ? (
+            <div key={order.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Sipariş Tarihi</p>
+                    <p className="font-medium">{formatDate(order.date)}</p>
                   </div>
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-gray-600">
-                      {order.products.length} Ürün
-                    </span>
-                    <span className="font-medium text-blue-600">
-                      {order.price.toLocaleString('tr-TR')} TL
+                  <div>
+                    <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}>
+                      {getStatusText(order.status)}
                     </span>
                   </div>
                 </div>
-                <svg
-                  className={`w-5 h-5 ml-4 transform transition-transform ${
-                    expandedOrder === order.id ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
 
-              {expandedOrder === order.id && (
-                <div className="border-t border-gray-200 p-4">
-                  <div className="mb-4">
-                    <h3 className="font-medium mb-2">Teslimat Adresi</h3>
-                    <div className="text-gray-600">
-                      <p>{order.address.title}</p>
-                      <p>{order.address.address}</p>
-                      <p>{order.address.city} / {order.address.district}</p>
-                    </div>
-                  </div>
-
-                  <h3 className="font-medium mb-2">Ürünler</h3>
-                  <div className="space-y-2">
-                    {order.products.map((product, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between py-2 border-b last:border-b-0"
-                      >
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-gray-600">
-                            {product.detail} | Adet: {product.count}
-                          </p>
+                <div className="border-t pt-4">
+                  <div className="space-y-4">
+                    {order.items.map((item) => (
+                      item && item.product ? (
+                        <div key={item.product.id} className="flex items-center">
+                          <img
+                            src={item.product.images?.[0]?.url || item.product.image || '/placeholder.jpg'}
+                            alt={item.product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div className="ml-4 flex-grow">
+                            <h3 className="font-medium">{item.product.name}</h3>
+                            <p className="text-sm text-gray-500">Adet: {item.count}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">{(item.product.price * item.count).toFixed(2)} TL</p>
+                          </div>
                         </div>
-                        <span className="font-medium">
-                          {(product.price * product.count).toLocaleString('tr-TR')} TL
-                        </span>
-                      </div>
+                      ) : null
                     ))}
                   </div>
+                </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Toplam Tutar</span>
-                      <span className="font-bold text-lg text-blue-600">
-                        {order.price.toLocaleString('tr-TR')} TL
-                      </span>
+                <div className="border-t mt-4 pt-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-500">Teslimat Adresi</p>
+                      <p className="font-medium">{order.shipping_address?.full_name}</p>
+                      <p className="text-sm text-gray-600">{order.shipping_address?.address}</p>
+                      <p className="text-sm text-gray-600">
+                        {order.shipping_address?.district}, {order.shipping_address?.city}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">Toplam Tutar</p>
+                      <p className="text-xl font-bold text-[#0891b2]">{order.total?.toFixed(2)} TL</p>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+          ) : null
+        ))}
+      </div>
     </div>
   );
 };

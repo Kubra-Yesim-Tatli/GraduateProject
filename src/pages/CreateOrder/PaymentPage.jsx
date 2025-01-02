@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import { clearCart } from '../../Redux/Action/cartActions';
 import CreditCardForm from '../../components/CreditCardForm';
 
 const PaymentPage = () => {
   const history = useHistory();
+  const dispatch = useDispatch();
+  const { cart } = useSelector((state) => state.cart);
   const [cards, setCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -19,19 +23,6 @@ const PaymentPage = () => {
       setSelectedCard(savedCards[0]);
     }
   }, []);
-
-  const fetchCards = async () => {
-    try {
-      const response = await axiosInstance.get('/user/card');
-      setCards(response.data);
-      if (response.data.length > 0 && !selectedCard) {
-        setSelectedCard(response.data[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching cards:', error);
-      toast.error('Kartlar yüklenirken bir hata oluştu');
-    }
-  };
 
   const handleCardSubmit = async (data) => {
     try {
@@ -105,7 +96,7 @@ const PaymentPage = () => {
     }
 
     try {
-      // Get addresses from localStorage
+      // Get addresses and cart from localStorage/Redux
       const shippingAddress = JSON.parse(localStorage.getItem('shippingAddress'));
       const billingAddress = JSON.parse(localStorage.getItem('billingAddress'));
       
@@ -113,6 +104,9 @@ const PaymentPage = () => {
         toast.error('Teslimat adresi bulunamadı');
         return;
       }
+
+      // Calculate total
+      const total = cart.reduce((sum, item) => sum + (item.product.price * item.count), 0);
 
       // Create order object
       const order = {
@@ -126,6 +120,11 @@ const PaymentPage = () => {
           expire_month: selectedCard.expire_month,
           expire_year: selectedCard.expire_year
         },
+        items: cart.map(item => ({
+          product: item.product,
+          count: item.count
+        })),
+        total: total,
         status: 'pending'
       };
 
@@ -134,17 +133,20 @@ const PaymentPage = () => {
       existingOrders.push(order);
       localStorage.setItem('orders', JSON.stringify(existingOrders));
 
-      // Clear order data
+      // Clear cart in Redux
+      dispatch(clearCart());
+
+      // Clear order data from localStorage
       localStorage.removeItem('shippingAddress');
       localStorage.removeItem('billingAddress');
       localStorage.removeItem('selectedPaymentCard');
 
-      // Show success message and redirect to home
+      // Show success message and redirect
       toast.success('Siparişiniz başarıyla oluşturuldu!', {
         onClose: () => {
           history.push('/');
         },
-        autoClose: 2000 // 2 saniye sonra kapanacak
+        autoClose: 2000
       });
     } catch (error) {
       console.error('Order error:', error);

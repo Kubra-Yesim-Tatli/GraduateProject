@@ -21,3 +21,7 @@ export const toggleCartItemCheck = (productId) => ({
 export const toggleCartDropdown = () => ({
     type: 'TOGGLE_CART_DROPDOWN'
 });
+
+export const clearCart = () => ({
+    type: 'CLEAR_CART'
+});
