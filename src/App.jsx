@@ -22,6 +22,7 @@ import CompletePage from './pages/CreateOrder/CompletePage';
 import OrderSuccessPage from './pages/CreateOrder/OrderSuccessPage';
 import PreviousOrdersPage from './pages/PreviousOrdersPage';
 import AboutPage from './pages/AboutPage';
+import TeamPage from './pages/TeamPage';
 import { verifyToken } from './Redux/Action/authActions';
 
 // Create a wrapper component that uses Redux hooks
@@ -43,6 +44,7 @@ const AppContent = () => {
           <Route path="/login" component={LoginForm} />
           <Route exact path="/shop" component={ShopPage} />
           <Route path="/about" component={AboutPage} />
+          <Route path="/team" component={TeamPage} />
           <Route path="/categories" component={CategoryPage} />
           <Route exact path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
           <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetail} />

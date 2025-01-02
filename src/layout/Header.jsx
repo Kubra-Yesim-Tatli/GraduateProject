@@ -40,9 +40,8 @@ const Header = () => {
         <Link to="/" className="text-sm hover:underline">Home</Link>
         <Link to="/shop" className="text-sm hover:underline">Shop</Link>
         <Link to="/about" className="text-sm hover:underline">About</Link>
-        <Link to="/blog" className="text-sm hover:underline">Blog</Link>
+        <Link to="/team" className="text-sm hover:underline">Team</Link>
         <Link to="/contact" className="text-sm hover:underline">Contact</Link>
-        <Link to="/pages" className="text-sm hover:underline">Pages</Link>
       </nav>
 
       <div className="flex items-center justify-end w-full space-x-4 md:w-auto">
@@ -106,9 +105,8 @@ const Header = () => {
             <Link to="/" className="block text-sm py-2">Home</Link>
             <Link to="/shop" className="block text-sm py-2">Shop</Link>
             <Link to="/about" className="block text-sm py-2">About</Link>
-            <Link to="/blog" className="block text-sm py-2">Blog</Link>
+            <Link to="/team" className="block text-sm py-2">Team</Link>
             <Link to="/contact" className="block text-sm py-2">Contact</Link>
-            <Link to="/pages" className="block text-sm py-2">Pages</Link>
           </div>
         )}
       </div>
