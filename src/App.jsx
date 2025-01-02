@@ -17,6 +17,7 @@ import CategoryPage from './pages/CategoryPage';
 import CartPage from './pages/CartPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AddressPage from './pages/CreateOrder/AddressPage';
+import PaymentPage from './pages/CreateOrder/PaymentPage';
 import { verifyToken, setUser } from './Redux/Action/authActions';
 
 // Create a wrapper component that uses Redux hooks
@@ -46,6 +47,7 @@ const AppContent = () => {
           <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetail} />
           <Route path="/cart" component={CartPage} />
           <ProtectedRoute exact path="/create-order/address" component={AddressPage} />
+          <ProtectedRoute path="/create-order/payment" component={PaymentPage} />
         </Switch>
       </main>
       <Footer />
