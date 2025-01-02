@@ -14,6 +14,13 @@ axiosInstance.interceptors.request.use(
     (config) => {
         // API uyanana kadar timeout süresini artıralım
         config.timeout = 10000;
+
+        // Add auth token to header if it exists
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            config.headers.Authorization = token; // Token'ı Bearer prefix'i olmadan gönder
+        }
+
         return config;
     },
     (error) => {
@@ -29,7 +36,6 @@ axiosInstance.interceptors.response.use(
     (error) => {
         if (error.code === 'ERR_NETWORK' || error.response?.status === 503) {
             console.log('API servisi geçici olarak ulaşılamıyor. Lütfen biraz sonra tekrar deneyin.');
-            // Burada kullanıcıya gösterilecek bir hata mesajı ekleyebiliriz
         }
         return Promise.reject(error);
     }

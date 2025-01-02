@@ -1,40 +1,34 @@
 import axiosInstance from '../../api/axiosInstance';
 
 // Action Types
-export const SET_USER = 'SET_USER';
-export const SET_AUTH_ERROR = 'SET_AUTH_ERROR';
+export const LOGIN_START = 'LOGIN_START';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const LOGIN_FAILURE = 'LOGIN_FAILURE';
 export const LOGOUT = 'LOGOUT';
 
 // Action Creators
-export const setUser = (user) => {
-  // Kullanıcı bilgilerini localStorage'a kaydet
-  if (user) {
-    localStorage.setItem('user', JSON.stringify(user));
-  }
-  return {
-    type: SET_USER,
-    payload: user,
-  };
-};
-
-export const setAuthError = (error) => ({
-  type: SET_AUTH_ERROR,
-  payload: error,
+export const loginStart = () => ({
+  type: LOGIN_START
 });
 
-export const logout = () => {
-  // Kullanıcı bilgilerini localStorage'dan sil
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  return {
-    type: LOGOUT,
-  };
-};
+export const loginSuccess = (data) => ({
+  type: LOGIN_SUCCESS,
+  payload: data
+});
+
+export const loginFailure = (error) => ({
+  type: LOGIN_FAILURE,
+  payload: error
+});
+
+export const logoutAction = () => ({
+  type: LOGOUT
+});
 
 // Helper Functions
 const setAxiosToken = (token) => {
   if (token) {
-    axiosInstance.defaults.headers.common['Authorization'] = token;
+    axiosInstance.defaults.headers.common['Authorization'] = token; 
   } else {
     delete axiosInstance.defaults.headers.common['Authorization'];
   }
@@ -43,7 +37,7 @@ const setAxiosToken = (token) => {
 // Thunk Actions
 export const verifyToken = () => async (dispatch) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     const savedUser = localStorage.getItem('user');
     
     if (!token || !savedUser) {
@@ -55,35 +49,45 @@ export const verifyToken = () => async (dispatch) => {
 
     // Parse saved user
     const user = JSON.parse(savedUser);
-    dispatch(setUser(user));
+    dispatch(loginSuccess({
+      token,
+      user
+    }));
 
   } catch (error) {
     console.error('Token verification failed:', error);
-    dispatch(setAuthError('Session expired'));
-    localStorage.removeItem('token');
+    dispatch(loginFailure('Session expired'));
+    localStorage.removeItem('authToken');
     localStorage.removeItem('user');
   }
 };
 
 export const login = (credentials, rememberMe) => async (dispatch) => {
   try {
+    dispatch(loginStart());
     const response = await axiosInstance.post('/login', credentials);
     
-    if (response.data.token) {
-      // Token'ı kaydet
-      localStorage.setItem('token', response.data.token);
-      setAxiosToken(response.data.token);
+    const { token, user } = response.data;
+    
+    if (rememberMe) {
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
     }
 
-    dispatch(setUser(response.data.user));
+    setAxiosToken(token);
+    dispatch(loginSuccess({ token, user }));
     
+    return response.data;
   } catch (error) {
     console.error('Login failed:', error);
-    dispatch(setAuthError(error.response?.data?.message || 'Login failed'));
+    dispatch(loginFailure(error.response?.data?.message || 'Login failed'));
+    throw error;
   }
 };
 
-export const logoutUser = () => (dispatch) => {
+export const logout = () => (dispatch) => {
   setAxiosToken(null);
-  dispatch(logout());
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('user');
+  dispatch(logoutAction());
 };

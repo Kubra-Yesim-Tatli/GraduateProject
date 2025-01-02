@@ -18,7 +18,10 @@ import CartPage from './pages/CartPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AddressPage from './pages/CreateOrder/AddressPage';
 import PaymentPage from './pages/CreateOrder/PaymentPage';
-import { verifyToken, setUser } from './Redux/Action/authActions';
+import CompletePage from './pages/CreateOrder/CompletePage';
+import OrderSuccessPage from './pages/CreateOrder/OrderSuccessPage';
+import PreviousOrdersPage from './pages/PreviousOrdersPage';
+import { verifyToken } from './Redux/Action/authActions';
 
 // Create a wrapper component that uses Redux hooks
 const AppContent = () => {
@@ -26,11 +29,7 @@ const AppContent = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Sayfa yüklendiğinde localStorage'dan kullanıcı bilgilerini kontrol et
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      dispatch(setUser(JSON.parse(savedUser)));
-    }
+    dispatch(verifyToken());
   }, [dispatch]);
 
   return (
@@ -46,8 +45,11 @@ const AppContent = () => {
           <Route exact path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
           <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetail} />
           <Route path="/cart" component={CartPage} />
-          <ProtectedRoute exact path="/create-order/address" component={AddressPage} />
-          <ProtectedRoute path="/create-order/payment" component={PaymentPage} />
+          <ProtectedRoute path="/order/address" component={AddressPage} />
+          <ProtectedRoute path="/order/payment" component={PaymentPage} />
+          <ProtectedRoute path="/order/complete" component={CompletePage} />
+          <ProtectedRoute path="/order/success" component={OrderSuccessPage} />
+          <ProtectedRoute path="/profile/orders" component={PreviousOrdersPage} />
         </Switch>
       </main>
       <Footer />
@@ -55,37 +57,24 @@ const AppContent = () => {
   );
 };
 
-// Create an auth wrapper component
-const AuthWrapper = ({ children }) => {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(verifyToken());
-  }, [dispatch]);
-
-  return children;
-};
-
 function App() {
   return (
     <Provider store={store}>
       <UserProvider>
         <Router>
-          <AuthWrapper>
-            <AppContent />
-            <ToastContainer 
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
-          </AuthWrapper>
+          <AppContent />
+          <ToastContainer 
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         </Router>
       </UserProvider>
     </Provider>

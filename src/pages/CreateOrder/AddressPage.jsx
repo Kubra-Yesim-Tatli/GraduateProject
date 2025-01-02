@@ -68,11 +68,17 @@ const AddressPage = () => {
       toast.error('Lütfen bir teslimat adresi seçin');
       return;
     }
+
     if (!isSameAddress && !selectedBillingAddress) {
       toast.error('Lütfen bir fatura adresi seçin');
       return;
     }
-    history.push('/create-order/payment');
+
+    // Store selected addresses in localStorage
+    localStorage.setItem('shippingAddress', JSON.stringify(selectedShippingAddress));
+    localStorage.setItem('billingAddress', JSON.stringify(isSameAddress ? selectedShippingAddress : selectedBillingAddress));
+
+    history.push('/order/payment');
   };
 
   return (

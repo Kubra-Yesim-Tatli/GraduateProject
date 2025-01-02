@@ -51,7 +51,7 @@ const CartPage = () => {
         if (!isAuthenticated) {
             history.push('/login', { from: '/cart' });
         } else {
-            history.push('/create-order/address');
+            history.push('/order/address');
         }
     };
 

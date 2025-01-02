@@ -1,32 +1,47 @@
-import { SET_USER, SET_AUTH_ERROR, LOGOUT } from '../Action/authActions';
+import { LOGIN_START, LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT } from '../Action/authActions';
+
+const token = localStorage.getItem('authToken');
+const savedUser = localStorage.getItem('user');
 
 const initialState = {
-  user: null,
+  isAuthenticated: !!token,
+  user: savedUser ? JSON.parse(savedUser) : null,
+  token: token || null,
   error: null,
-  isAuthenticated: false,
+  loading: false
 };
 
 const authReducer = (state = initialState, action) => {
   switch (action.type) {
-    case SET_USER:
+    case LOGIN_START:
       return {
         ...state,
-        user: action.payload,
-        error: null,
-        isAuthenticated: true,
+        loading: true,
+        error: null
       };
-    case SET_AUTH_ERROR:
+    case LOGIN_SUCCESS:
       return {
         ...state,
-        error: action.payload,
-        isAuthenticated: false,
+        isAuthenticated: true,
+        user: action.payload.user,
+        token: action.payload.token,
+        loading: false,
+        error: null
+      };
+    case LOGIN_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload
       };
     case LOGOUT:
       return {
         ...state,
-        user: null,
-        error: null,
         isAuthenticated: false,
+        user: null,
+        token: null,
+        error: null,
+        loading: false
       };
     default:
       return state;
