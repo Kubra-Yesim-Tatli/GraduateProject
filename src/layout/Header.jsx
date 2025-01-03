@@ -32,19 +32,25 @@ const Header = () => {
 
   return (
     <header className="flex flex-col items-center justify-between px-4 py-2 bg-white border-b md:flex-row">
-      <div className="text-lg font-bold text-left w-full md:w-auto">
-        <Link to="/" className="text-left block md:inline">Bandage</Link>
+      <div className="flex items-center justify-between w-full md:w-auto">
+        <Link to="/" className="text-lg font-bold">Bandage</Link>
+        <button 
+          className="md:hidden p-2 rounded-full hover:bg-gray-100"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          <AlignJustify size={20} />
+        </button>
       </div>
 
-      <nav className="flex flex-col items-center mt-4 space-y-2 text-[#737373] md:space-x-6 md:space-y-0 md:mt-0 md:flex-row">
-        <Link to="/" className="text-sm hover:underline">Home</Link>
-        <Link to="/shop" className="text-sm hover:underline">Shop</Link>
-        <Link to="/about" className="text-sm hover:underline">About</Link>
-        <Link to="/team" className="text-sm hover:underline">Team</Link>
-        <Link to="/contact" className="text-sm hover:underline">Contact</Link>
+      <nav className={`${isMenuOpen ? 'flex' : 'hidden'} flex-col items-center w-full mt-4 space-y-2 text-[#737373] md:flex md:space-x-6 md:space-y-0 md:mt-0 md:flex-row md:w-auto`}>
+        <Link to="/" className="text-sm hover:underline" onClick={() => setIsMenuOpen(false)}>Home</Link>
+        <Link to="/shop" className="text-sm hover:underline" onClick={() => setIsMenuOpen(false)}>Shop</Link>
+        <Link to="/about" className="text-sm hover:underline" onClick={() => setIsMenuOpen(false)}>About</Link>
+        <Link to="/team" className="text-sm hover:underline" onClick={() => setIsMenuOpen(false)}>Team</Link>
+        <Link to="/contact" className="text-sm hover:underline" onClick={() => setIsMenuOpen(false)}>Contact</Link>
       </nav>
 
-      <div className="flex items-center justify-end w-full space-x-4 md:w-auto">
+      <div className={`${isMenuOpen ? 'flex' : 'hidden'} flex-col items-center w-full mt-4 space-y-4 md:flex md:flex-row md:items-center md:justify-end md:w-auto md:mt-0 md:space-x-4 md:space-y-0`}>
         {isAuthenticated ? (
           <div className="relative" ref={userMenuRef}>
             <div
@@ -98,23 +104,6 @@ const Header = () => {
           <Search size={20} />
         </button>
         <CartDropdown />
-        
-        <button
-          className="p-2 rounded-full hover:bg-gray-100 md:hidden"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          <AlignJustify size={20} />
-        </button>
-
-        {isMenuOpen && (
-          <div className="absolute top-16 right-4 bg-white shadow-lg p-4 rounded-md md:hidden border border-gray-200">
-            <Link to="/" className="block text-sm py-2">Home</Link>
-            <Link to="/shop" className="block text-sm py-2">Shop</Link>
-            <Link to="/about" className="block text-sm py-2">About</Link>
-            <Link to="/team" className="block text-sm py-2">Team</Link>
-            <Link to="/contact" className="block text-sm py-2">Contact</Link>
-          </div>
-        )}
       </div>
     </header>
   );

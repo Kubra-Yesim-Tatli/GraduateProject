@@ -63,10 +63,12 @@ const ShopPage = () => {
     const fetchCategoryProducts = async (categoryId) => {
       try {
         const response = await axiosInstance.get(`/products?category=${categoryId}`);
-        setCategoryProducts(prev => ({
-          ...prev,
-          [categoryId]: response.data.total
-        }));
+        if (response.data && response.data.total) {
+          setCategoryProducts(prev => ({
+            ...prev,
+            [categoryId]: response.data.total
+          }));
+        }
       } catch (error) {
         console.error("Error fetching category products:", error);
       }
@@ -82,7 +84,7 @@ const ShopPage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedFilter(filter);
-    }, 500); // 500ms bekle
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [filter]);
@@ -97,30 +99,40 @@ const ShopPage = () => {
   const fetchProducts = async () => {
     try {
       dispatch(setFetchState("FETCHING"));
-      let url = `/api/products?page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
+      let url = `/products?offset=${currentPage * ITEMS_PER_PAGE}&limit=${ITEMS_PER_PAGE}`;
       
       // Sıralama parametresi varsa ekle
       if (sort) {
-        url += `&sort=${sort}`;
+        const [field, order] = sort.split(':');
+        url += `&sort=${field}&order=${order}`;
       }
       
       // Kategori ID'si varsa ekle
       if (categoryId) {
-        url += `&categoryId=${categoryId}`;
+        url += `&category=${categoryId}`;
       }
       
       // Filtreleme parametresi varsa ekle
       if (debouncedFilter) {
-        url += `&filter=${debouncedFilter}&filterType=${filterType}`;
+        url += `&${filterType}=${debouncedFilter}`;
       }
 
       const response = await axiosInstance.get(url);
-      dispatch(setProductList(response.data));
-      dispatch(setTotal(response.data.total));
+      
+      if (response.data && response.data.products) {
+        dispatch(setProductList(response.data.products));
+        dispatch(setTotal(response.data.total || 0));
+      } else {
+        dispatch(setProductList([]));
+        dispatch(setTotal(0));
+      }
+      
       dispatch(setFetchState("FETCHED"));
     } catch (error) {
       console.error("Error fetching products:", error);
       dispatch(setFetchState("ERROR"));
+      dispatch(setProductList([]));
+      dispatch(setTotal(0));
     }
   };
 
