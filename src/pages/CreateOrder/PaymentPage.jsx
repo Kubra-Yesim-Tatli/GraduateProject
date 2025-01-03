@@ -147,12 +147,15 @@ const PaymentPage = () => {
       localStorage.removeItem('billingAddress');
       localStorage.removeItem('selectedPaymentCard');
 
-      // Show success message and redirect
+      // Sipariş başarılı olduğunda
+      dispatch(clearCart());
       toast.success('Siparişiniz başarıyla oluşturuldu!', {
+        autoClose: 2000,
         onClose: () => {
-          history.push('/profile/orders');
-        },
-        autoClose: 2000
+          setTimeout(() => {
+            history.push('/order-success');
+          }, 500);
+        }
       });
     } catch (error) {
       console.error('Order error:', error);

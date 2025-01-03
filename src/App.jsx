@@ -3,27 +3,26 @@ import React, { useEffect } from "react";
 import { Provider, useDispatch } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import Header from "./layout/Header";
-import Footer from "./layout/Footer";
-import HomePage from "./pages/HomePage";
-import SignupForm from "./components/SignupForm";
-import LoginForm from "./components/LoginForm";
-import ShopPage from "./pages/ShopPage";
-import UserProvider from "./layout/UserContext";
-import store from "./Redux/store";
-import ProductDetail from './pages/ProductDetail';
+import store from './Redux/store';
+import Header from './layout/Header';
+import Footer from './layout/Footer';
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import TeamPage from './pages/TeamPage';
+import ContactPage from './pages/ContactPage';
 import CategoryPage from './pages/CategoryPage';
+import ShopPage from './pages/ShopPage';
+import ProductDetail from './pages/ProductDetail';
 import CartPage from './pages/CartPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import SignupForm from './components/SignupForm';
+import LoginForm from './components/LoginForm';
 import AddressPage from './pages/CreateOrder/AddressPage';
 import PaymentPage from './pages/CreateOrder/PaymentPage';
 import CompletePage from './pages/CreateOrder/CompletePage';
 import OrderSuccessPage from './pages/CreateOrder/OrderSuccessPage';
 import PreviousOrdersPage from './pages/PreviousOrdersPage';
-import AboutPage from './pages/AboutPage';
-import TeamPage from './pages/TeamPage';
-import ContactPage from './pages/ContactPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import UserProvider from "./layout/UserContext";
 import { verifyToken } from './Redux/Action/authActions';
 
 // Create a wrapper component that uses Redux hooks
@@ -51,11 +50,11 @@ const AppContent = () => {
           <Route exact path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
           <Route path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId" component={ProductDetail} />
           <Route path="/cart" component={CartPage} />
-          <ProtectedRoute exact path="/order/address" component={AddressPage} />
-          <ProtectedRoute exact path="/order/payment" component={PaymentPage} />
-          <ProtectedRoute exact path="/order/complete" component={CompletePage} />
-          <ProtectedRoute exact path="/order/success" component={OrderSuccessPage} />
-          <ProtectedRoute exact path="/profile/orders" component={PreviousOrdersPage} />
+          <Route path="/order-success" component={OrderSuccessPage} />
+          <ProtectedRoute path="/profile/orders" component={PreviousOrdersPage} />
+          <ProtectedRoute path="/order/address" component={AddressPage} />
+          <ProtectedRoute path="/order/payment" component={PaymentPage} />
+          <ProtectedRoute path="/order/complete" component={CompletePage} />
         </Switch>
       </main>
       <Footer />

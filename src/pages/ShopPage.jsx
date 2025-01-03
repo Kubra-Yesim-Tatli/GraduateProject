@@ -297,36 +297,61 @@ const ShopPage = () => {
       </div>
 
       {/* Products Grid */}
-      <div className={`grid ${
-        viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "grid-cols-1"
-      } gap-4`}>
+      <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" : "space-y-4"}>
         {products?.map((product) => (
           <div
             key={product.id}
-            className="group cursor-pointer hover:shadow-lg transition-shadow duration-300 bg-white rounded-lg overflow-hidden"
+            className={`bg-white rounded-lg shadow-md overflow-hidden ${
+              viewMode === "list" ? "flex" : ""
+            }`}
+            onClick={() => handleProductClick(product)}
           >
-            <div onClick={() => handleProductClick(product)}>
+            <div className={`relative ${viewMode === "list" ? "w-48" : "w-full"}`}>
               <img
-                src={product.images[0]?.url || "placeholder.jpg"}
+                src={product.images[0]?.url || `https://source.unsplash.com/400x400/?${product.name}`}
                 alt={product.name}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-48 object-cover"
               />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-600">{product.price} TL</p>
+              {product.discount > 0 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded">
+                  {product.discount}% İndirim
+                </div>
+              )}
+              <div className="absolute bottom-2 right-2 flex items-center bg-black/50 text-white px-2 py-1 rounded">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg
+                      key={star}
+                      className={`w-4 h-4 ${
+                        star <= (product.rating || 0)
+                          ? "text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="ml-1 text-sm">{product.rating ? product.rating.toFixed(1) : '0.0'}</span>
               </div>
             </div>
-            <div className="px-4 pb-4">
-              <button
-                onClick={(e) => handleAddToCart(product, e)}
-                className={`w-full py-2 rounded-md transition-colors ${
-                  isProductInCart(product.id)
-                    ? "bg-[#0891b2] hover:bg-[#0891b2]/90 text-white"
-                    : "bg-[#0891b2] hover:bg-[#0891b2]/90 text-white"
-                }`}
-              >
-                {isProductInCart(product.id) ? "Sepette" : "Sepete Ekle"}
-              </button>
+            <div className={`p-4 ${viewMode === "list" ? "flex-1" : ""}`}>
+              <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <span className="text-xl font-bold text-primary">
+                    {product.price.toFixed(2)} TL
+                  </span>
+                  {product.discount > 0 && (
+                    <span className="text-sm text-gray-500 line-through ml-2">
+                      {(product.price / (1 - product.discount / 100)).toFixed(2)} TL
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-gray-600 text-sm mb-4">{product.description}</p>
             </div>
           </div>
         ))}
