@@ -144,7 +144,7 @@ const PaymentPage = () => {
       // Show success message and redirect
       toast.success('Siparişiniz başarıyla oluşturuldu!', {
         onClose: () => {
-          history.push('/');
+          history.push('/profile/orders');
         },
         autoClose: 2000
       });
