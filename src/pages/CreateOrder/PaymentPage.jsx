@@ -14,6 +14,7 @@ const PaymentPage = () => {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
     // Load cards from localStorage
@@ -92,6 +93,11 @@ const PaymentPage = () => {
   const handleConfirmOrder = async () => {
     if (!selectedCard) {
       toast.error('Lütfen bir kart seçin');
+      return;
+    }
+
+    if (!termsAccepted) {
+      toast.error('Lütfen sözleşme ve koşulları kabul edin');
       return;
     }
 
@@ -290,7 +296,12 @@ const PaymentPage = () => {
 
             <div className="mt-4 text-sm text-gray-600">
               <label className="flex items-start gap-2">
-                <input type="checkbox" className="mt-1" />
+                <input 
+                  type="checkbox" 
+                  className="mt-1"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                />
                 <span>
                   <a href="#" className="text-[#f97316]">Ön Bilgilendirme Koşulları</a>
                   {' '}ve{' '}
