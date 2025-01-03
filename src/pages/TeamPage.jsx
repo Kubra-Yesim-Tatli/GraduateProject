@@ -6,21 +6,21 @@ const TeamPage = () => {
     {
       name: 'Erhan FIRAT',
       role: 'Project Owner',
-      image: 'https://media.licdn.com/dms/image/C4D03AQFj_3YR0MiC4w/profile-displayphoto-shrink_800_800/0/1578520926261?e=1709769600&v=beta&t=qTGwJLXZJrJ4VWv1aPJnwVEJzgHkHKNGVFiB2SHFPiM',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=erhan&backgroundColor=b6e3f4',
       linkedin: 'https://www.linkedin.com/in/erhanfirat/',
       email: 'erhan.firat@workintech.com.tr'
     },
     {
       name: 'Gökhan Özdemir',
       role: 'Scrum Master',
-      image: 'https://media.licdn.com/dms/image/C4D03AQGg5ASWOHVOtQ/profile-displayphoto-shrink_800_800/0/1657711676405?e=1709769600&v=beta&t=_sPcuC6k5u2i_IJt9RXFFEXGRz-O2TxOSupe5V83_Ow',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=gokhan&backgroundColor=c0aede',
       linkedin: 'https://www.linkedin.com/in/gokhan-ozdemir/',
       email: 'gokhan.ozdemir@workintech.com.tr'
     },
     {
       name: 'Merve Şahin',
       role: 'Full Stack Developer',
-      image: 'https://avatars.githubusercontent.com/u/129686552?v=4',
+      image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=merve&backgroundColor=ffdfbf',
       linkedin: 'https://www.linkedin.com/in/merve-%C5%9Fahin-b80787280/',
       email: 'mervesahin@gmail.com'
     }
@@ -34,12 +34,12 @@ const TeamPage = () => {
         
         <div className="grid grid-cols-3 gap-8 max-w-6xl mx-auto">
           {teamMembers.map((member, index) => (
-            <div key={index} className="text-center">
+            <div key={index} className="text-center bg-white rounded-lg shadow-lg p-6 transform transition-transform duration-300 hover:scale-105">
               <div className="mb-4">
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="w-48 h-48 rounded-full mx-auto object-cover"
+                  className="w-48 h-48 mx-auto"
                 />
               </div>
               <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
@@ -49,13 +49,13 @@ const TeamPage = () => {
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-[#0891b2]"
+                  className="text-gray-600 hover:text-[#0891b2] transition-colors"
                 >
                   <Linkedin size={20} />
                 </a>
                 <a
                   href={`mailto:${member.email}`}
-                  className="text-gray-600 hover:text-[#0891b2]"
+                  className="text-gray-600 hover:text-[#0891b2] transition-colors"
                 >
                   <Mail size={20} />
                 </a>
@@ -71,12 +71,12 @@ const TeamPage = () => {
         
         <div className="space-y-8">
           {teamMembers.map((member, index) => (
-            <div key={index} className="text-center">
+            <div key={index} className="text-center bg-white rounded-lg shadow-lg p-6">
               <div className="mb-3">
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="w-32 h-32 rounded-full mx-auto object-cover"
+                  className="w-32 h-32 mx-auto"
                 />
               </div>
               <h3 className="text-lg font-semibold mb-1">{member.name}</h3>
@@ -86,13 +86,13 @@ const TeamPage = () => {
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-[#0891b2]"
+                  className="text-gray-600 hover:text-[#0891b2] transition-colors"
                 >
                   <Linkedin size={18} />
                 </a>
                 <a
                   href={`mailto:${member.email}`}
-                  className="text-gray-600 hover:text-[#0891b2]"
+                  className="text-gray-600 hover:text-[#0891b2] transition-colors"
                 >
                   <Mail size={18} />
                 </a>
