@@ -20,8 +20,10 @@ const ShopPage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [sort, setSort] = useState("");
   const [filter, setFilter] = useState("");
+  const [filterType, setFilterType] = useState("name");
   const [currentPage, setCurrentPage] = useState(0);
   const [categoryProducts, setCategoryProducts] = useState({});
+  const [debouncedFilter, setDebouncedFilter] = useState("");
   const ITEMS_PER_PAGE = 25;
 
   const pageCount = Math.ceil(total / ITEMS_PER_PAGE);
@@ -78,37 +80,47 @@ const ShopPage = () => {
   }, [categories]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilter(filter);
+    }, 500); // 500ms bekle
+
+    return () => clearTimeout(timer);
+  }, [filter]);
+
+  useEffect(() => {
+    if (debouncedFilter !== filter) {
+      setCurrentPage(0);
+    }
     fetchProducts();
-  }, [currentPage, sort, filter, categoryId]);
+  }, [currentPage, sort, debouncedFilter, categoryId]);
 
   const fetchProducts = async () => {
     try {
       dispatch(setFetchState("FETCHING"));
-      const offset = currentPage * ITEMS_PER_PAGE;
-      let url = `/products?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
-      
-      // Kategori ID'si varsa, o kategorinin ürünlerini getir
-      if (categoryId) {
-        url += `&category=${categoryId}`;
-      }
+      let url = `/api/products?page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
       
       // Sıralama parametresi varsa ekle
       if (sort) {
         url += `&sort=${sort}`;
       }
       
+      // Kategori ID'si varsa ekle
+      if (categoryId) {
+        url += `&categoryId=${categoryId}`;
+      }
+      
       // Filtreleme parametresi varsa ekle
-      if (filter) {
-        url += `&filter=${filter}`;
+      if (debouncedFilter) {
+        url += `&filter=${debouncedFilter}&filterType=${filterType}`;
       }
 
       const response = await axiosInstance.get(url);
-      dispatch(setProductList(response.data.products));
+      dispatch(setProductList(response.data));
       dispatch(setTotal(response.data.total));
       dispatch(setFetchState("FETCHED"));
     } catch (error) {
       console.error("Error fetching products:", error);
-      dispatch(setFetchState("FETCH_ERROR"));
+      dispatch(setFetchState("ERROR"));
     }
   };
 
@@ -117,9 +129,15 @@ const ShopPage = () => {
     setCurrentPage(0); // Reset to first page when sort changes
   };
 
+  const handleFilterTypeChange = (e) => {
+    const value = e.target.value;
+    setFilterType(value);
+    setFilter(""); // Reset filter when type changes
+    setCurrentPage(0);
+  };
+
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
-    setCurrentPage(0); // Reset to first page when filter changes
   };
 
   const handlePageChange = ({ selected }) => {
@@ -239,13 +257,30 @@ const ShopPage = () => {
         </div>
 
         <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Filter products..."
-            value={filter}
-            onChange={handleFilterChange}
-            className="p-2 border rounded-md flex-1"
-          />
+          <div className="flex-1 flex gap-2">
+            <select
+              value={filterType}
+              onChange={(e) => handleFilterTypeChange(e)}
+              className="p-2 border rounded-md w-32"
+            >
+              <option value="name">İsim</option>
+              <option value="color">Renk</option>
+              <option value="size">Beden</option>
+              <option value="gender">Cinsiyet</option>
+              <option value="fabric">Kumaş</option>
+            </select>
+            <input
+              type="text"
+              placeholder={`${filterType === 'name' ? 'Ürün adına göre ara...' : 
+                          filterType === 'color' ? 'Renge göre ara...' :
+                          filterType === 'size' ? 'Bedene göre ara...' :
+                          filterType === 'gender' ? 'Cinsiyete göre ara...' :
+                          'Kumaş türüne göre ara...'}`}
+              value={filter}
+              onChange={handleFilterChange}
+              className="p-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <select
             value={sort}
             onChange={handleSortChange}
