@@ -106,7 +106,11 @@ const PreviousOrdersPage = () => {
                   <div className="space-y-4">
                     {order.items.map((item) => (
                       item && item.product ? (
-                        <div key={item.product.id} className="flex items-center">
+                        <div 
+                          key={item.product.id} 
+                          className="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                          onClick={() => history.push(`/shop/${item.product.gender}/${item.product.categoryName}/${item.product.categoryId}/${item.product.nameSlug}/${item.product.id}`)}
+                        >
                           <img
                             src={item.product.images?.[0]?.url || item.product.image || '/placeholder.jpg'}
                             alt={item.product.name}
